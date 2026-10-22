@@ -30,6 +30,8 @@ This app uses Vercel's Flask/Python runtime and Neon Postgres in production.
 The SQLite database is for local development only; the Vercel runtime is
 configured to refuse startup without `DATABASE_URL`, `FLASK_SECRET_KEY` and
 `ADMIN_PASSWORD`.
+The `api/index.py` entry point exposes the Flask app to Vercel, and `vercel.json`
+routes application requests to it while serving static assets from `public`.
 
 1. Create a Neon project and copy its pooled PostgreSQL connection string. Keep
    the `sslmode=require` parameter in the connection string.
