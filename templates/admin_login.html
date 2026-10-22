@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin sign in — VidhyaLabs</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="admin-body">
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('home') }}" aria-label="VidhyaLabs home">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/vidhyalabs-logo.png') }}" alt="VidhyaLabs — Your Everyday Needs. One Platform.">
+    </a>
+    <a class="header-link" href="{{ url_for('home') }}">Back to website</a>
+  </header>
+  <main class="admin-login-wrap">
+    <section class="admin-login-card">
+      <span class="eyebrow">VIDHYALABS ADMIN</span>
+      {% if not configured %}
+        <h1>Admin access isn’t configured</h1>
+        <p>Set the <code>ADMIN_PASSWORD</code> environment variable on the server, then restart the app to enable the customer dashboard.</p>
+      {% else %}
+        <h1>Sign in to your dashboard</h1>
+        <p>Customer contact details are private. Sign in to view registered customers.</p>
+        {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+        <form method="post" action="{{ url_for('admin_login') }}">
+          <input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}">
+          <div class="field">
+            <label for="password">Admin password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+          </div>
+          <button class="button button-submit" type="submit">Sign in <span aria-hidden="true">→</span></button>
+        </form>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

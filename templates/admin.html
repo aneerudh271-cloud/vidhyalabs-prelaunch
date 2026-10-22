@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Customer signups — VidhyaLabs admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="admin-body">
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('home') }}" aria-label="VidhyaLabs home">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/vidhyalabs-logo.png') }}" alt="VidhyaLabs — Your Everyday Needs. One Platform.">
+    </a>
+    <div class="admin-header-actions">
+      <a class="header-link" href="{{ url_for('home') }}">View website</a>
+      <form method="post" action="{{ url_for('admin_logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="header-link logout-button" type="submit">Sign out</button>
+      </form>
+    </div>
+  </header>
+  <main class="admin-main">
+    <div class="admin-title-row">
+      <div>
+        <span class="eyebrow">VIDHYALABS ADMIN</span>
+        <h1>Customer signups</h1>
+        <p>Pre-launch interest registrations and contact details.</p>
+      </div>
+      <div class="signup-count"><strong>{{ customers|length }}</strong><span>total signups</span></div>
+    </div>
+    {% if customers %}
+      <div class="customer-table-wrap">
+        <table class="customer-table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Email</th>
+              <th scope="col">Address</th>
+              <th scope="col">Interested in</th>
+              <th scope="col">Signed up (UTC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customers %}
+              <tr>
+                <td>{{ customer.id }}</td>
+                <td class="customer-name">{{ customer.name }}</td>
+                <td><a href="tel:{{ customer.phone }}">{{ customer.phone }}</a></td>
+                <td><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></td>
+                <td class="customer-address">{{ customer.address }}</td>
+                <td>
+                  {% if customer.interests %}
+                    <div class="customer-interests">
+                      {% for interest in customer.interests %}<span>{{ interest }}</span>{% endfor %}
+                    </div>
+                  {% else %}
+                    <span class="empty-value">Not specified</span>
+                  {% endif %}
+                </td>
+                <td class="signup-time">{{ customer.created_at }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <section class="admin-empty">
+        <span aria-hidden="true">✳</span>
+        <h2>No signups yet</h2>
+        <p>New pre-launch registrations will appear here.</p>
+      </section>
+    {% endif %}
+    <p class="admin-privacy-note">Customer information is private. Keep this dashboard and its database access restricted.</p>
+  </main>
+</body>
+</html>

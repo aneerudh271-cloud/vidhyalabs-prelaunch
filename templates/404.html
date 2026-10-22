@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f3">
+  <meta name="robots" content="noindex, follow">
+  <title>Page not found — VidhyaLabs</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="not-found-body">
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('home') }}" aria-label="VidhyaLabs home">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/vidhyalabs-logo.png') }}" alt="VidhyaLabs — Your Everyday Needs. One Platform.">
+    </a>
+    <a class="header-link" href="{{ url_for('home') }}">Back to home</a>
+  </header>
+  <main class="not-found-main">
+    <div class="not-found-art" aria-hidden="true">
+      <span class="not-found-number">404</span>
+      <span class="not-found-house">⌂</span>
+    </div>
+    <span class="eyebrow">LOOKS LIKE THIS ADDRESS GOT LOST</span>
+    <h1>We can’t find<br><span>that page.</span></h1>
+    <p>The page may have moved, or the link might be mistyped. Let’s get you back to the good stuff.</p>
+    <div class="not-found-actions">
+      <a class="button button-primary" href="{{ url_for('home') }}">Go to homepage <span aria-hidden="true">→</span></a>
+      <a class="not-found-secondary" href="{{ url_for('home') }}#signup">Join the early list</a>
+    </div>
+    <p class="not-found-location">VidhyaLabs · Coming soon to Bhopal</p>
+  </main>
+</body>
+</html>

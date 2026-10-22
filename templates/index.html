@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f3">
+  <meta name="description" content="Sign up for VidhyaLabs pre-launch offers in Bhopal. Everyday essentials and trusted home services, one platform.">
+  <title>VidhyaLabs — Your Everyday Needs. One Platform.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="VidhyaLabs home">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/vidhyalabs-logo.png') }}" alt="VidhyaLabs — Your Everyday Needs. One Platform.">
+    </a>
+    <a class="header-link" href="#signup">Get launch offers <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="availability"><span></span> COMING SOON TO BHOPAL</div>
+        <h1>Your everyday needs.<br><span>One simple platform.</span></h1>
+        <p class="hero-description">Daily essentials at your doorstep and reliable home services when you need them. VidhyaLabs is getting ready for your neighbourhood.</p>
+        <div class="launch-note">
+          <span class="calendar-icon" aria-hidden="true">▦</span>
+          <span><strong>Launching 10 November 2026</strong><small>Starting with Indus Town, Krishnapuram &amp; Radhapuram</small></span>
+        </div>
+        <a class="button button-primary" href="#signup">Join the early list <span aria-hidden="true">→</span></a>
+        <p class="no-spam">Sign up for launch updates and exclusive pre-launch offers.</p>
+      </div>
+      <div class="hero-art">
+        <img class="hero-photo" src="{{ url_for('static', filename='images/milk-delivery.png') }}" alt="A VidhyaLabs delivery partner bringing milk to a Bhopal home">
+        <div class="art-caption"><span class="caption-dot"></span> Made for your neighbourhood</div>
+      </div>
+    </section>
+
+    <section class="neighbourhoods" aria-label="Launch neighbourhoods">
+      <span class="neighbourhood-label">FIRST UP IN</span>
+      <span class="neighbourhood">Indus Town</span>
+      <span class="neighbourhood">Krishnapuram</span>
+      <span class="neighbourhood">Radhapuram</span>
+      <span class="neighbourhood-city">Bhopal, Madhya Pradesh</span>
+    </section>
+
+    <section class="offer-section">
+      <div class="section-heading">
+        <span class="eyebrow">PRODUCTS &amp; SERVICES</span>
+        <h2>What you’ll find on <span>VidhyaLabs.</span></h2>
+        <p>Everyday essentials, convenient subscriptions and trusted home services—coming soon to your neighbourhood.</p>
+      </div>
+      <div class="service-grid">
+        <article class="service-card" id="products">
+          <img class="service-photo" src="{{ url_for('static', filename='images/milk-products.png') }}" alt="VidhyaLabs boiled and non-boiled milk bottles" loading="lazy">
+          <div class="service-content">
+            <span class="offer-meta">DAILY ESSENTIALS</span>
+            <h3>Milk &amp; dairy</h3>
+            <p>Choose boiled or non-boiled cow and buffalo milk, with daily, weekly or monthly subscriptions.</p>
+            <div class="price-table-wrap">
+              <table class="price-table">
+                <thead><tr><th>Milk</th><th>Type</th><th>500 ml</th><th>1 litre</th></tr></thead>
+                <tbody>
+                  <tr><td>Boiled</td><td>Cow</td><td>₹35</td><td>₹70</td></tr>
+                  <tr><td>Boiled</td><td>Buffalo</td><td>₹40</td><td>₹75</td></tr>
+                  <tr><td>Non-boiled</td><td>Cow</td><td>₹33</td><td>₹65</td></tr>
+                  <tr><td>Non-boiled</td><td>Buffalo</td><td>₹37</td><td>₹70</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+        <article class="service-card">
+          <div class="service-placeholder pantry-placeholder" role="img" aria-label="Illustration for groceries and daily essentials"><span>🥬</span><span>Stock up for home</span></div>
+          <div class="service-content">
+            <span class="offer-meta">DAILY ESSENTIALS</span>
+            <h3>Groceries &amp; daily essentials</h3>
+            <p>Everyday pantry, household and personal-care items in one place.</p>
+            <ul class="service-list">
+              <li>Rice, wheat flour and pulses</li>
+              <li>Cooking oil, sugar, salt and spices</li>
+              <li>Tea, coffee, breakfast essentials, packaged foods and snacks</li>
+              <li>Household cleaning supplies and personal care products</li>
+            </ul>
+          </div>
+        </article>
+        <article class="service-card" id="newspapers">
+          <div class="service-placeholder newspaper-placeholder" role="img" aria-label="Illustration for newspaper delivery"><span>🗞️</span><span>News at your doorstep</span></div>
+          <div class="service-content">
+            <span class="offer-meta">DAILY ESSENTIALS</span>
+            <h3>Newspapers</h3>
+            <p>Daily newspaper delivery and monthly subscriptions, with multiple newspaper options subject to availability.</p>
+          </div>
+        </article>
+        <article class="service-card">
+          <div class="service-placeholder water-placeholder" role="img" aria-label="Illustration for drinking water delivery"><span>💧</span><span>Water, delivered</span></div>
+          <div class="service-content">
+            <span class="offer-meta">DAILY ESSENTIALS</span>
+            <h3>Drinking water</h3>
+            <p>Packaged drinking-water bottles and 20-litre jars, with scheduled and recurring delivery options.</p>
+          </div>
+        </article>
+        <article class="service-card" id="home-cleaning">
+          <img class="service-photo" src="{{ url_for('static', filename='images/home-cleaning.png') }}" alt="VidhyaLabs cleaning professionals refreshing a living room" loading="lazy">
+          <div class="service-content">
+            <span class="offer-meta">HOME SERVICES</span>
+            <h3>Home cleaning</h3>
+            <p><strong class="service-price">₹300 per hour</strong></p>
+            <ul class="service-list">
+              <li>Regular and deep cleaning</li>
+              <li>Kitchen and bathroom cleaning</li>
+              <li>Move-in and move-out cleaning</li>
+            </ul>
+          </div>
+        </article>
+        <article class="service-card">
+          <img class="service-photo" src="{{ url_for('static', filename='images/car-wash.png') }}" alt="A VidhyaLabs professional washing a car" loading="lazy">
+          <div class="service-content">
+            <span class="offer-meta">HOME SERVICES</span>
+            <h3>Vehicle cleaning</h3>
+            <p>Car exterior wash, car interior cleaning, and bike or scooter wash. Daily, weekly and monthly subscription plans available.</p>
+          </div>
+        </article>
+        <article class="service-card">
+          <img class="service-photo service-photo-tall" src="{{ url_for('static', filename='images/home-services.png') }}" alt="VidhyaLabs professionals providing electrical, plumbing and appliance repair" loading="lazy">
+          <div class="service-content">
+            <span class="offer-meta">HOME SERVICES</span>
+            <h3>Electrician, plumbing &amp; appliance repair</h3>
+            <p><strong class="service-price">₹300 booking fee</strong> for each service, settled against the final bill.</p>
+            <ul class="service-list">
+              <li><strong>Electrician:</strong> switches, sockets, fans, lighting, wiring and fault diagnosis</li>
+              <li><strong>Plumbing:</strong> taps, pipe leaks, drainage, washbasins and toilets</li>
+              <li><strong>Appliance repair:</strong> washing machines, refrigerators, ACs, microwaves and more</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="signup-section" id="signup">
+      <div class="signup-copy">
+        <span class="eyebrow eyebrow-light">BE FIRST IN YOUR NEIGHBOURHOOD</span>
+        <h2>Good things are<br>around the corner.</h2>
+        <p>Leave your details and we’ll let you know when VidhyaLabs launches, along with any pre-launch offers.</p>
+        <div class="signup-date"><span aria-hidden="true">✳</span> Launch day · 10 November 2026</div>
+      </div>
+      <div class="form-card">
+        <div class="form-heading">
+          <span class="form-step">EARLY ACCESS</span>
+          <h3>Stay in the loop</h3>
+          <p>Just a few details to get started.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="status">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+        {% if errors %}
+          <div class="alert alert-error" role="alert">
+            <strong>Please check the following:</strong>
+            <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('home') }}#signup">
+          <input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}">
+          <div class="field-row">
+            <div class="field">
+              <label for="name">Your name <span>*</span></label>
+              <input id="name" name="name" type="text" autocomplete="name" maxlength="100" placeholder="e.g. Ananya Sharma" value="{{ values.get('name', '') }}" required>
+            </div>
+            <div class="field">
+              <label for="phone">Phone number <span>*</span></label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="+91 98765 43210" value="{{ values.get('phone', '') }}" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="email">Email address <span>*</span></label>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" value="{{ values.get('email', '') }}" required>
+          </div>
+          <div class="field">
+            <label for="address">Your address in Bhopal <span>*</span></label>
+            <textarea id="address" name="address" autocomplete="street-address" maxlength="500" rows="2" placeholder="House / flat, street and neighbourhood" required>{{ values.get('address', '') }}</textarea>
+          </div>
+          <fieldset class="interests">
+            <legend>What are you interested in? <small>Choose any</small></legend>
+            <div class="interest-options">
+              {% for key, label in interest_options.items() %}
+                <label class="check-option">
+                  <input type="checkbox" name="interests" value="{{ key }}" {% if key in selected_interests %}checked{% endif %}>
+                  <span>{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <label class="consent">
+            <input type="checkbox" name="consent" value="yes" required {% if values.get('consent') == 'yes' %}checked{% endif %}>
+            <span>I agree that VidhyaLabs may contact me about the launch and pre-launch offers. <span class="required">*</span></span>
+          </label>
+          <button class="button button-submit" type="submit">Get me on the list <span aria-hidden="true">→</span></button>
+          <p class="privacy-note">Your details will only be used for VidhyaLabs launch updates and offers.</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="closing-note">
+      <span class="brand-mark brand-mark-small" aria-hidden="true">V</span>
+      <p><strong>VidhyaLabs</strong> — Your Everyday Needs. One Platform.</p>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <span>© 2026 VidhyaLabs</span>
+    <span>Made for everyday life in Bhopal.</span>
+    <a href="{{ url_for('admin_login') }}">Admin</a>
+  </footer>
+  <nav class="mobile-nav" aria-label="Quick navigation">
+    <a href="#top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="#products">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L22 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+      <span>Essentials</span>
+    </a>
+    <a href="#home-cleaning">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6 8 12"/><path d="m6.5 13.5-3 3a2.1 2.1 0 0 0 3 3l3-3"/><path d="m14 6 4-4 4 4-4 4"/><path d="M13 11 6 18"/></svg>
+      <span>Services</span>
+    </a>
+    <a href="#signup" class="mobile-nav-join">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Join</span>
+    </a>
+  </nav>
+</body>
+</html>
