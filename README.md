@@ -53,3 +53,13 @@ Each signup stores a name, address, phone number, email, selected interests and
 UTC submission time. Keep the database private and back it up securely. Before
 launching publicly, deploy behind HTTPS and publish an appropriate privacy
 notice/contact address.
+
+## Google indexing
+
+The public homepage is described in `public/sitemap.xml` and `public/robots.txt`;
+the homepage also includes a canonical URL and search/social metadata. After
+`https://www.vidhyalabs.com` is reachable over HTTPS, add the domain property
+`vidhyalabs.com` in Google Search Console, complete its DNS TXT verification
+with GoDaddy, then submit `https://www.vidhyalabs.com/sitemap.xml`. Google
+decides when and whether to index pages; submission does not guarantee a search
+listing.
