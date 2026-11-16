@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /driver.html
+Disallow: /store.html
+Disallow: /app.html
+
+Sitemap: https://vidhyalabs.com/sitemap.xml
