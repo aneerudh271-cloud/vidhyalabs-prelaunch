@@ -1,0 +1,22 @@
+{
+  "name": "VidhyaLabs — Everyday Needs. One Platform.",
+  "short_name": "VidhyaLabs",
+  "description": "Fresh milk, groceries, water, newspapers and home services in Bhopal.",
+  "start_url": "app.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f8f3",
+  "theme_color": "#1f6b4a",
+  "lang": "en-IN",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Milk", "url": "app.html#shop" },
+    { "name": "Services", "url": "app.html#services" },
+    { "name": "Cart", "url": "app.html#cart" }
+  ]
+}

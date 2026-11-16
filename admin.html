@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>VidhyaLabs Admin</title>
+<link rel="icon" href="icons/favicon.png">
+<link rel="stylesheet" href="styles.css">
+<style>
+body{background:var(--bg)}
+.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0}
+.bar img{height:34px;width:auto;display:block}
+.bar .sp{flex:1}
+.tabs{display:flex;gap:6px;overflow-x:auto}
+.tabs button{font:inherit;font-weight:700;border:0;background:transparent;padding:.7em 1em;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--green);border-color:var(--green)}
+.count{display:inline-block;min-width:22px;text-align:center;font-size:.75rem;background:var(--leaf);color:var(--green-d);border-radius:99px;padding:.1em .5em;margin-left:.3em}
+.count.hot{background:var(--sun);color:#3a2800}
+main{padding:20px 0 60px}
+.login{max-width:380px;margin:60px auto;padding:24px}
+.banner{background:var(--sun-l);border:1px solid #f3dca4;border-radius:14px;padding:.7rem 1rem;margin-bottom:16px;font-size:.9rem}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filters button{font:inherit;font-weight:700;font-size:.85rem;padding:.4em .9em;border-radius:99px;background:#fff;border:1.5px solid var(--line);cursor:pointer;color:var(--ink)}
+.filters button.on{background:var(--green);border-color:var(--green);color:#fff}
+.filters input{max-width:260px;margin-left:auto;padding:.5em .9em}
+.order,.conv{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.order.new{border-color:var(--sun);box-shadow:0 0 0 3px var(--sun-l)}
+.row{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:baseline}
+.id{font-weight:800}
+.badge{font-size:.72rem;font-weight:800;background:var(--sun);color:#3a2800;border-radius:99px;padding:.1em .6em;margin-left:.4em}
+.meta{color:var(--muted);font-size:.88rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:.7rem 0}
+@media(max-width:640px){.cols{grid-template-columns:1fr}}
+.cols>div{min-width:0;overflow-wrap:anywhere}
+.cols ul{margin:.2rem 0;padding-left:1.1rem}
+.st{display:flex;gap:6px;flex-wrap:wrap;margin-top:.4rem}
+.st button{font:inherit;font-weight:700;font-size:.8rem;padding:.4em .85em;border-radius:99px;border:1.5px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.st button.on{background:var(--green);color:#fff;border-color:var(--green)}
+.st button.cancel.on{background:#b3261e;border-color:#b3261e}
+.st button:disabled{opacity:.6;cursor:wait}
+.thread{display:grid;gap:6px;margin:.6rem 0}
+.b{max-width:85%;padding:8px 11px;border-radius:14px;font-size:.92rem;overflow-wrap:anywhere;white-space:pre-wrap}
+.b small{display:block;opacity:.7;font-size:.7rem;margin-top:2px}
+.b.c{background:var(--leaf);justify-self:start;border-bottom-left-radius:4px}
+.b.t{background:var(--green);color:#fff;justify-self:end;border-bottom-right-radius:4px}
+.reply{display:flex;gap:8px;align-items:flex-end}
+.reply textarea{flex:1;min-height:44px}
+.tablew{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:16px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:.65rem .9rem;border-bottom:1px solid var(--line);white-space:nowrap}
+td.wrap{white-space:normal}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+.err{color:#b3261e;font-weight:600;margin:.6rem 0 0}
+.assign{display:flex;gap:12px;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px dashed var(--line)}
+.assign label{margin:0;font-size:.8rem;display:flex;gap:6px;align-items:center;font-weight:600;color:var(--muted)}
+.assign select{width:auto;padding:.35em .7em;font-size:.88rem}
+.note{background:var(--leaf);border:1px solid #bcdcc9;border-radius:14px;padding:.8rem 1rem;margin-bottom:14px;font-weight:600}
+.note code{font-size:1.15rem;letter-spacing:.12em}
+.addform{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.addform>div{flex:1;min-width:150px}
+.chip2{display:inline-block;font-size:.72rem;font-weight:800;padding:.15em .65em;border-radius:99px;background:var(--sun-l);color:#6b5516}
+.chip2.good{background:var(--leaf);color:var(--green-d)}.chip2.bad{background:#fde3e0;color:#8a1c14}
+.ghost{font:inherit;font-weight:700;font-size:.8rem;padding:.4em .85em;border-radius:99px;border:1.5px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.ghost.red{color:#b3261e}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <div class="bar">
+    <img src="images/logo-lockup.png" alt="VidhyaLabs">
+    <b>Admin</b><span class="sp"></span>
+    <span class="meta" id="updated"></span>
+    <button class="btn btn-ghost" id="refresh" type="button">Refresh</button>
+    <button class="btn btn-ghost" id="signout" type="button">Sign out</button>
+  </div>
+  <div class="tabs" id="tabs" role="tablist">
+    <button data-t="orders" class="on">Orders<span class="count" id="c-orders">0</span></button>
+    <button data-t="messages">Messages<span class="count" id="c-messages">0</span></button>
+    <button data-t="drivers">Drivers<span class="count" id="c-drivers">0</span></button>
+    <button data-t="stores">Stores<span class="count" id="c-stores">0</span></button>
+    <button data-t="waitlist">Waitlist<span class="count" id="c-waitlist">0</span></button>
+  </div>
+</div></div>
+
+<main class="wrap">
+  <div class="card login hidden" id="login">
+    <h2 style="font-size:1.3rem">Admin sign in</h2>
+    <p class="muted">Enter the admin password you set in the backend.</p>
+    <form id="loginForm">
+      <label for="key">Admin password</label>
+      <input id="key" type="password" autocomplete="current-password" required>
+      <button class="btn btn-primary btn-block" style="margin-top:1rem" type="submit">Sign in</button>
+      <p class="err hidden" id="loginErr"></p>
+    </form>
+  </div>
+  <div id="app" class="hidden">
+    <div class="banner hidden" id="demoBanner"><b>Demo mode.</b> No backend is connected, so this page only shows orders, messages and signups saved on this device. See SETUP.md to connect the backend.</div>
+    <div id="view"></div>
+  </div>
+</main>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = VL.config, live = !!C.formEndpoint;
+  var STATUSES = ['Placed', 'Confirmed', 'Ready for pickup', 'Out for delivery', 'Delivered', 'Cancelled'];
+  var state = { tab: 'orders', filter: 'Active', q: '', data: { orders: [], messages: [], waitlist: [], drivers: [], stores: [] }, note: '', key: '', busy: false };
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function inr(n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+  function when(t) { var d = new Date(t); return isNaN(d) ? '' : d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }); }
+  function ls(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k) || ''; if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return ''; } return ''; }
+
+  /* ---------- data access: live backend, or this device's data in demo mode ---------- */
+  function api(payload) {
+    return fetch(C.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json(); }).catch(function () { return { ok: false, error: 'network' }; });
+  }
+  function demo(action, p) {
+    var orders = ls('vl_orders', []), msgs = ls('vl_msgs', []), prof = ls('vl_profile', {});
+    if (action === 'list') {
+      return Promise.resolve({ ok: true,
+        orders: orders.map(function (o) { return Object.assign({ status: 'Placed' }, o, { status: o.status || 'Placed' }); }),
+        messages: msgs.map(function (m) { return { at: m.at, phone: prof.phone || '', name: prof.name || 'Customer', from: m.team ? 'team' : 'customer', text: m.text }; }),
+        waitlist: ls('vl_waitlist', []), drivers: [], stores: [] });
+    }
+    if (action === 'status') { orders.forEach(function (o) { if (o.id === p.id) o.status = p.status; }); lsSet('vl_orders', orders); return Promise.resolve({ ok: true }); }
+    if (action === 'reply') { msgs.push({ at: new Date().toISOString(), text: p.text, team: true, sent: true }); lsSet('vl_msgs', msgs); return Promise.resolve({ ok: true }); }
+    return Promise.resolve({ ok: false, error: 'demo' });
+  }
+  function call(action, p) {
+    return live ? api(Object.assign({ type: 'admin', key: state.key, action: action }, p || {})) : demo(action, p || {});
+  }
+
+  /* ---------- load ---------- */
+  function load(quiet) {
+    if (state.busy) return Promise.resolve();
+    state.busy = true;
+    return call('list').then(function (r) {
+      state.busy = false;
+      if (!r || !r.ok) {
+        if (r && r.error === 'auth') { signOut('Wrong password.'); } else if (!quiet) { $('updated').textContent = 'Could not reach the backend'; }
+        return;
+      }
+      state.data = { orders: r.orders || [], messages: r.messages || [], waitlist: r.waitlist || [], drivers: r.drivers || [], stores: r.stores || [] };
+      $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+      render();
+    });
+  }
+
+  /* ---------- render ---------- */
+  function isActive(o) { return o.status !== 'Delivered' && o.status !== 'Cancelled'; }
+  function counts() {
+    var seen = ls('vl_admin_seen', []);
+    var fresh = state.data.orders.filter(function (o) { return seen.indexOf(o.id) < 0 && isActive(o); }).length;
+    $('c-orders').textContent = state.data.orders.filter(isActive).length; $('c-orders').className = 'count' + (fresh ? ' hot' : '');
+    $('c-messages').textContent = threads().filter(function (t) { return t.last.from === 'customer'; }).length;
+    $('c-messages').className = 'count' + (threads().some(function (t) { return t.last.from === 'customer'; }) ? ' hot' : '');
+    $('c-waitlist').textContent = state.data.waitlist.length;
+    var pend = state.data.stores.filter(function (x) { return x.status === 'Pending'; }).length;
+    $('c-stores').textContent = pend; $('c-stores').className = 'count' + (pend ? ' hot' : '');
+    $('c-drivers').textContent = state.data.drivers.filter(function (x) { return x.active; }).length;
+  }
+  function render() {
+    counts();
+    document.querySelectorAll('#tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-t') === state.tab); });
+    var keepReply = {}; document.querySelectorAll('textarea[data-reply]').forEach(function (t) { keepReply[t.getAttribute('data-reply')] = t.value; });
+    $('view').innerHTML = (state.note ? '<div class="note">' + state.note + '</div>' : '') + (state.tab === 'orders' ? ordersView() : state.tab === 'messages' ? messagesView(keepReply) : state.tab === 'drivers' ? driversView() : state.tab === 'stores' ? storesView() : waitlistView());
+    if (state.tab === 'orders') {
+      var ids = state.data.orders.map(function (o) { return o.id; });
+      // mark as seen after the first render of this list, so "New" shows until you have looked at it
+      setTimeout(function () { lsSet('vl_admin_seen', ids.slice(0, 300)); }, 4000);
+    }
+  }
+  function ordersView() {
+    var list = state.data.orders, q = state.q.trim().toLowerCase();
+    var seen = ls('vl_admin_seen', []);
+    var filters = ['Active', 'All'].concat(STATUSES);
+    var h = '<div class="filters">' + filters.map(function (f) { return '<button data-filter="' + f + '" class="' + (state.filter === f ? 'on' : '') + '">' + f + '</button>'; }).join('') +
+      '<input id="q" type="search" placeholder="Search name, phone, ID" value="' + esc(state.q) + '" aria-label="Search orders"></div>';
+    list = list.filter(function (o) {
+      var okF = state.filter === 'All' || (state.filter === 'Active' ? isActive(o) : o.status === state.filter);
+      var hay = (o.id + ' ' + o.customer.name + ' ' + o.customer.phone + ' ' + o.customer.area).toLowerCase();
+      return okF && (!q || hay.indexOf(q) > -1);
+    });
+    if (!list.length) return h + '<div class="empty">No orders here yet.</div>';
+    return h + list.map(function (o) {
+      var isNew = seen.indexOf(o.id) < 0 && isActive(o);
+      return '<div class="order' + (isNew ? ' new' : '') + '"><div class="row"><span><span class="id">#' + esc(o.id) + '</span>' + (isNew ? '<span class="badge">New</span>' : '') + ' <span class="meta">' + when(o.at) + '</span></span><b>' + inr(o.total) + (o.unpriced ? ' <span class="meta">+ ' + o.unpriced + ' to price</span>' : '') + '</b></div>' +
+        '<div class="cols"><div><b>' + esc(o.customer.name) + '</b><br>' + esc(o.customer.phone) + '<br>' + esc(o.customer.area) + '<br>' + esc(o.customer.address) +
+        '</div><div><ul>' + (o.lines || []).map(function (l) { return '<li>' + esc(l.text) + '</li>'; }).join('') + '</ul>' +
+        '<span class="meta">' + esc(o.payment || '') + (o.slot ? ' · ' + esc(o.slot) : '') + (o.when ? ' · ' + esc(o.when) : '') + '</span>' + (o.notes ? '<br><span class="meta">Note: ' + esc(o.notes) + '</span>' : '') + '</div></div>' +
+        '<div class="st">' + STATUSES.map(function (s) { return '<button data-status="' + s + '" data-id="' + esc(o.id) + '" class="' + (s === 'Cancelled' ? 'cancel ' : '') + (o.status === s ? 'on' : '') + '">' + s + '</button>'; }).join('') + '</div>' + assignHTML(o) + '</div>';
+    }).join('');
+  }
+  function assignHTML(o) {
+    var stores = state.data.stores.filter(function (x) { return x.status === 'Approved' || x.id === o.store; });
+    var drivers = state.data.drivers.filter(function (x) { return x.active || x.id === o.driver; });
+    if (!live) return '';
+    var opt = function (list, cur) { return '<option value="">Unassigned</option>' + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join(''); };
+    return '<div class="assign" data-order="' + esc(o.id) + '"><label>Store <select data-assign="store">' + opt(stores, o.store) + '</select></label><label>Driver <select data-assign="driver">' + opt(drivers, o.driver) + '</select></label></div>';
+  }
+  function driversView() {
+    if (!live) return '<div class="empty">Drivers need the backend. See SETUP.md.</div>';
+    var h = '<div class="addform"><div><label for="dn">Driver name</label><input id="dn" autocomplete="off"></div><div><label for="dp">Phone number</label><input id="dp" type="tel" inputmode="tel" autocomplete="off"></div><button class="btn btn-primary" data-adddriver type="button">Add driver</button></div>';
+    var d = state.data.drivers;
+    if (!d.length) return h + '<div class="empty">No drivers yet. Add one, then share the login page <b>driver.html</b> and the PIN with them.</div>';
+    return h + '<div class="tablew"><table><thead><tr><th>Name</th><th>Phone</th><th>Status</th><th></th></tr></thead><tbody>' + d.map(function (r) {
+      return '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.phone) + '</td><td><span class="chip2 ' + (r.active ? 'good' : 'bad') + '">' + (r.active ? 'Active' : 'Inactive') + '</span></td><td><button class="ghost" data-driverpin="' + esc(r.id) + '">Reset PIN</button> <button class="ghost ' + (r.active ? 'red' : '') + '" data-drivertoggle="' + esc(r.id) + '">' + (r.active ? 'Deactivate' : 'Activate') + '</button></td></tr>';
+    }).join('') + '</tbody></table></div>';
+  }
+  function storesView() {
+    if (!live) return '<div class="empty">Stores need the backend. See SETUP.md.</div>';
+    var s = state.data.stores;
+    if (!s.length) return '<div class="empty">No store applications yet. Share the page <b>partner.html</b> to let stores apply.</div>';
+    var order = { Pending: 0, Approved: 1, Suspended: 2, Rejected: 3 };
+    return s.slice().sort(function (a, b) { return (order[a.status] - order[b.status]) || (b.at - a.at); }).map(function (r) {
+      var cls = r.status === 'Approved' ? 'good' : (r.status === 'Pending' ? '' : 'bad'), id = esc(r.id);
+      var btns = r.status === 'Pending' ? '<button class="btn btn-primary" data-store="approve" data-id="' + id + '">Approve</button> <button class="ghost red" data-store="reject" data-id="' + id + '">Reject</button>' :
+        r.status === 'Approved' ? '<button class="ghost" data-store="resetpin" data-id="' + id + '">Reset PIN</button> <button class="ghost red" data-store="suspend" data-id="' + id + '">Suspend</button>' :
+        '<button class="ghost" data-store="approve" data-id="' + id + '">Approve again</button>';
+      return '<div class="order"><div class="row"><span><span class="id">' + esc(r.name) + '</span> <span class="chip2 ' + cls + '">' + esc(r.status) + '</span></span><span class="meta">' + when(r.at) + '</span></div>' +
+        '<div class="cols"><div>' + esc(r.owner) + '<br>' + esc(r.phone) + '<br>' + esc(r.area) + '<br>' + esc(r.address) + '</div><div>' + (r.categories.length ? 'Sells: ' + esc(r.categories.join(', ')) + '<br>' : '') + (r.fssai ? 'FSSAI: ' + esc(r.fssai) + '<br>' : '<span class="meta">No FSSAI number given</span><br>') + (r.notes ? '<span class="meta">' + esc(r.notes) + '</span>' : '') + '</div></div><div class="st">' + btns + '</div></div>';
+    }).join('');
+  }
+  function threads() {
+    var by = {};
+    state.data.messages.forEach(function (m) { (by[m.phone] = by[m.phone] || []).push(m); });
+    return Object.keys(by).map(function (p) {
+      var msgs = by[p].sort(function (a, b) { return new Date(a.at) - new Date(b.at); });
+      var name = ''; msgs.forEach(function (m) { if (m.from === 'customer' && m.name) name = m.name; });
+      return { phone: p, name: name || 'Customer', msgs: msgs, last: msgs[msgs.length - 1] };
+    }).sort(function (a, b) { return new Date(b.last.at) - new Date(a.last.at); });
+  }
+  function messagesView(keep) {
+    var t = threads();
+    if (!t.length) return '<div class="empty">No messages yet.</div>';
+    return t.map(function (c) {
+      return '<div class="conv"><div class="row"><b>' + esc(c.name) + '</b><span class="meta">' + esc(c.phone) + (c.last.from === 'customer' ? ' <span class="badge">Awaiting reply</span>' : '') + '</span></div>' +
+        '<div class="thread">' + c.msgs.map(function (m) { return '<div class="b ' + (m.from === 'team' ? 't' : 'c') + '">' + esc(m.text) + '<small>' + (m.from === 'team' ? 'You · ' : '') + when(m.at) + '</small></div>'; }).join('') + '</div>' +
+        '<div class="reply"><textarea data-reply="' + esc(c.phone) + '" rows="2" placeholder="Write a reply" aria-label="Reply to ' + esc(c.name) + '">' + esc(keep[c.phone] || '') + '</textarea><button class="btn btn-primary" data-send="' + esc(c.phone) + '" data-name="' + esc(c.name) + '">Send</button></div></div>';
+    }).join('');
+  }
+  function waitlistView() {
+    var w = state.data.waitlist;
+    if (!w.length) return '<div class="empty">No signups yet.</div>';
+    return '<div class="filters"><button id="copycsv" type="button">Copy as CSV</button><span class="meta" id="copied"></span></div><div class="tablew"><table><thead><tr><th>When</th><th>Name</th><th>Phone</th><th>Area</th><th>Interested in</th></tr></thead><tbody>' +
+      w.map(function (r) { return '<tr><td>' + when(r.at) + '</td><td>' + esc(r.name) + '</td><td>' + esc(r.phone) + '</td><td>' + esc(r.area) + '</td><td class="wrap">' + esc((r.interests || []).join(', ')) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    if (t.hasAttribute('data-t')) { state.tab = t.getAttribute('data-t'); state.note = ''; render(); }
+    else if (t.hasAttribute('data-adddriver')) {
+      var nm = $('dn').value.trim(), pn = $('dp').value.replace(/\D/g, '').slice(-10);
+      if (nm.length < 2 || pn.length !== 10) return alertBar('Enter the driver name and a 10-digit phone number.');
+      t.disabled = true;
+      call('driverSave', { name: nm, phone: pn }).then(function (r) {
+        if (r && r.ok) state.note = 'Driver added: ' + esc(nm) + '. Login phone ' + esc(pn) + ', PIN <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once.'; else alertBar(r && r.error === 'phone already used' ? 'A driver with that phone already exists.' : 'Could not add the driver. Try again.');
+        state.busy = false; load();
+      });
+    } else if (t.hasAttribute('data-driverpin') || t.hasAttribute('data-drivertoggle')) {
+      var did = t.getAttribute('data-driverpin') || t.getAttribute('data-drivertoggle'), dr = state.data.drivers.filter(function (x) { return x.id === did; })[0]; if (!dr) return;
+      var reset = t.hasAttribute('data-driverpin'); t.disabled = true;
+      call('driverSave', { id: dr.id, name: dr.name, phone: dr.phone, active: reset ? dr.active : !dr.active, resetPin: reset }).then(function (r) {
+        if (r && r.ok && r.pin) state.note = 'New PIN for ' + esc(dr.name) + ': <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the driver. Try again.');
+        state.busy = false; load();
+      });
+    } else if (t.hasAttribute('data-store')) {
+      var dec = t.getAttribute('data-store'), sid = t.getAttribute('data-id'), sr = state.data.stores.filter(function (x) { return x.id === sid; })[0]; t.disabled = true;
+      call('storeDecide', { id: sid, decision: dec }).then(function (r) {
+        if (r && r.ok && r.pin) state.note = 'PIN for ' + esc(sr ? sr.name : 'store') + ': <code>' + esc(r.pin) + '</code>. Login: <b>store.html</b> with phone ' + esc(sr ? sr.phone : '') + '. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the store. Try again.');
+        state.busy = false; load();
+      });
+    }
+    else if (t.hasAttribute('data-filter')) { state.filter = t.getAttribute('data-filter'); render(); }
+    else if (t.hasAttribute('data-status')) {
+      var id = t.getAttribute('data-id'), s = t.getAttribute('data-status');
+      document.querySelectorAll('.st button').forEach(function (b) { b.disabled = true; });
+      call('status', { id: id, status: s }).then(function (r) { if (!r || !r.ok) alertBar('Could not update the status. Try again.'); state.busy = false; load(); });
+    } else if (t.hasAttribute('data-send')) {
+      var ph = t.getAttribute('data-send'), ta = document.querySelector('textarea[data-reply="' + ph + '"]'), text = ta ? ta.value.trim() : '';
+      if (!text) return; t.disabled = true;
+      call('reply', { phone: ph, name: t.getAttribute('data-name'), text: text }).then(function (r) { if (!r || !r.ok) alertBar('Could not send the reply. Try again.'); else if (ta) ta.value = ''; state.busy = false; load(); });
+    } else if (t.id === 'copycsv') {
+      var rows = [['When', 'Name', 'Phone', 'Area', 'Interested in']].concat(state.data.waitlist.map(function (r) { return [new Date(r.at).toISOString(), r.name, r.phone, r.area, (r.interests || []).join('; ')]; }));
+      var csv = rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+      var done = function (m) { var c = $('copied'); if (c) c.textContent = m; };
+      try { navigator.clipboard.writeText(csv).then(function () { done('Copied'); }, function () { done('Copy blocked by browser'); }); } catch (x) { done('Copy blocked by browser'); }
+    }
+  });
+  document.addEventListener('change', function (e) {
+    var sel = e.target.closest('select[data-assign]'); if (!sel) return;
+    var box = sel.closest('.assign'), id = box.getAttribute('data-order');
+    var store = box.querySelector('select[data-assign=store]').value, driver = box.querySelector('select[data-assign=driver]').value;
+    box.querySelectorAll('select').forEach(function (x) { x.disabled = true; });
+    call('assign', { id: id, store: store, driver: driver }).then(function (r) { if (!r || !r.ok) alertBar('Could not assign. Try again.'); state.busy = false; load(); });
+  });
+  document.addEventListener('input', function (e) { if (e.target.id === 'q') { state.q = e.target.value; var pos = e.target.selectionStart; render(); var q = $('q'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (x) {} } } });
+  function alertBar(msg) { var b = $('demoBanner'); b.classList.remove('hidden'); b.innerHTML = esc(msg); setTimeout(function () { if (live) b.classList.add('hidden'); else { b.innerHTML = '<b>Demo mode.</b> No backend is connected, so this page only shows orders, messages and signups saved on this device. See SETUP.md to connect the backend.'; } }, 3500); }
+  $('refresh').addEventListener('click', function () { state.busy = false; load(); });
+  $('signout').addEventListener('click', function () { signOut(''); });
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault(); state.key = $('key').value; $('loginErr').classList.add('hidden');
+    call('list').then(function (r) {
+      if (r && r.ok) { ss('vl_admin_key', state.key); start(); }
+      else { var er = $('loginErr'); er.textContent = r && r.error === 'auth' ? 'Wrong password.' : 'Could not reach the backend. Check the endpoint in data.js.'; er.classList.remove('hidden'); }
+    });
+  });
+
+  var timer = null;
+  function start() {
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('demoBanner').classList.toggle('hidden', live);
+    load(); clearInterval(timer); timer = setInterval(function () { load(true); }, 30000);
+  }
+  function signOut(msg) {
+    ss('vl_admin_key', null); state.key = ''; clearInterval(timer);
+    if (!live) { $('app').classList.add('hidden'); return; }
+    $('app').classList.add('hidden'); $('login').classList.remove('hidden'); $('key').value = '';
+    var er = $('loginErr'); if (msg) { er.textContent = msg; er.classList.remove('hidden'); } else er.classList.add('hidden');
+  }
+
+  if (!live) start();
+  else { state.key = ss('vl_admin_key'); if (state.key) start(); else $('login').classList.remove('hidden'); }
+})();
+</script>
+</body>
+</html>

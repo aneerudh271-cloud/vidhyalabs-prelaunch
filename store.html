@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff">
+<title>VidhyaLabs Store</title>
+<link rel="icon" href="icons/favicon.png">
+<link rel="stylesheet" href="styles.css">
+<style>
+body{background:var(--bg)}
+.wrap{max-width:640px}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 0}
+.bar img{height:32px;width:auto;display:block}
+.bar .sp{flex:1}
+.bar b{font-size:.95rem}
+.bar .meta,.bar button{white-space:nowrap}
+.bar .meta{overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+main{padding:16px 0 60px}
+.login{padding:22px;margin-top:40px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;font:inherit;font-weight:700;padding:.6em;border-radius:99px;border:1.5px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.tabs button.on{background:var(--green);border-color:var(--green);color:#fff}
+.job{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.id{font-weight:800}
+.meta{color:var(--muted);font-size:.88rem}
+.job ul{margin:.6rem 0;padding-left:1.2rem;font-size:1.02rem}
+.job li{margin-bottom:.2rem}
+.chip2{font-size:.72rem;font-weight:800;padding:.15em .65em;border-radius:99px;background:var(--sun-l);color:#6b5516}
+.chip2.good{background:var(--leaf);color:var(--green-d)}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+.err{color:#b3261e;font-weight:600;margin:.6rem 0 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="bar"><img src="images/logo-lockup.png" alt="VidhyaLabs"><b>Store</b><span class="sp"></span><span class="meta" id="who"></span><button class="btn btn-ghost" id="out" type="button" style="padding:.45em 1em">Sign out</button></div></div></header>
+<main class="wrap">
+  <div class="card login hidden" id="login">
+    <h2 style="font-size:1.3rem">Store sign in</h2>
+    <p class="muted">Use the phone number you applied with and the PIN given by the VidhyaLabs team. Not a partner yet? <a href="partner.html">Apply to join</a>.</p>
+    <form id="form">
+      <div style="margin-bottom:.8rem"><label for="ph">Phone number</label><input id="ph" type="tel" inputmode="tel" autocomplete="username" required></div>
+      <div><label for="pin">PIN</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" required></div>
+      <button class="btn btn-primary btn-block" style="margin-top:1rem" type="submit">Sign in</button>
+      <p class="err hidden" id="err"></p>
+    </form>
+  </div>
+  <div id="app" class="hidden">
+    <div class="tabs"><button data-f="todo" class="on">To pack <span id="n-todo"></span></button><button data-f="done">Handed over <span id="n-done"></span></button></div>
+    <div id="list"></div>
+  </div>
+</main>
+<script src="data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = VL.config, $ = function (i) { return document.getElementById(i); };
+  var st = { phone: '', pin: '', f: 'todo', orders: [], busy: false }, timer = null;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function when(t) { var d = new Date(t); return isNaN(d) ? '' : d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }); }
+  function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k) || ''; if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} return ''; }
+  function api(p) {
+    if (!C.formEndpoint) return Promise.resolve({ ok: false, error: 'noendpoint' });
+    return fetch(C.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ type: 'store', phone: st.phone, pin: st.pin }, p)) })
+      .then(function (r) { return r.json(); }).catch(function () { return { ok: false, error: 'network' }; });
+  }
+  function showErr(r) {
+    var e = $('err'); e.classList.remove('hidden');
+    e.textContent = r.error === 'auth' ? 'Wrong phone number or PIN, or your store is not approved yet.' : r.error === 'locked' ? 'Too many wrong attempts. Try again in 15 minutes.' : r.error === 'noendpoint' ? 'The backend is not connected yet. Ask the VidhyaLabs team.' : 'Could not connect. Check your internet and try again.';
+  }
+  function signOut() { ss('vl_store', null); st.phone = st.pin = ''; clearInterval(timer); $('app').classList.add('hidden'); $('login').classList.remove('hidden'); $('who').textContent = ''; $('pin').value = ''; }
+  function load() {
+    if (st.busy) return Promise.resolve(); st.busy = true;
+    return api({ action: 'list' }).then(function (r) {
+      st.busy = false;
+      if (!r.ok) { if (r.error === 'auth' || r.error === 'locked') { signOut(); showErr(r); } return; }
+      st.orders = r.orders || []; $('who').textContent = r.store && r.store.name || ''; render();
+    });
+  }
+  function isTodo(o) { return o.status === 'Placed' || o.status === 'Confirmed'; }
+  function render() {
+    var todo = st.orders.filter(isTodo), done = st.orders.filter(function (o) { return !isTodo(o); });
+    $('n-todo').textContent = '(' + todo.length + ')'; $('n-done').textContent = '(' + done.length + ')';
+    document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-f') === st.f); });
+    var list = st.f === 'todo' ? todo : done;
+    $('list').innerHTML = list.length ? list.map(job).join('') : '<div class="empty">' + (st.f === 'todo' ? 'No orders to pack right now.' : 'Nothing handed over in the last 2 days.') + '</div>';
+  }
+  function job(o) {
+    return '<div class="job"><div class="row"><span><span class="id">#' + esc(o.id) + '</span> <span class="chip2 ' + (isTodo(o) ? '' : 'good') + '">' + esc(o.status) + '</span></span><span class="meta">' + when(o.at) + '</span></div>' +
+      '<div class="meta">Delivery area: ' + esc(o.area) + (o.slot ? ' · ' + esc(o.slot) : '') + '</div>' +
+      '<ul>' + (o.lines || []).map(function (l) { return '<li>' + esc(l.text) + '</li>'; }).join('') + '</ul>' +
+      (isTodo(o) ? '<button class="btn btn-primary btn-block" data-ready="' + esc(o.id) + '">Mark ready for pickup</button>' : '') + '</div>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.hasAttribute('data-f')) { st.f = b.getAttribute('data-f'); render(); }
+    else if (b.hasAttribute('data-ready')) {
+      b.disabled = true;
+      api({ action: 'ready', id: b.getAttribute('data-ready') }).then(function (r) { st.busy = false; if (!r.ok) $('list').insertAdjacentHTML('afterbegin', '<p class="err">Could not update. Try again.</p>'); load(); });
+    }
+  });
+  $('out').addEventListener('click', signOut);
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault(); st.phone = $('ph').value.replace(/\D/g, '').slice(-10); st.pin = $('pin').value.trim(); $('err').classList.add('hidden');
+    api({ action: 'list' }).then(function (r) { if (r.ok) { ss('vl_store', JSON.stringify({ p: st.phone, k: st.pin })); start(); } else showErr(r); });
+  });
+  function start() { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); load(); clearInterval(timer); timer = setInterval(load, 20000); }
+  var saved = ss('vl_store'); if (saved) { try { var j = JSON.parse(saved); st.phone = j.p; st.pin = j.k; start(); } catch (x) { $('login').classList.remove('hidden'); } } else $('login').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>

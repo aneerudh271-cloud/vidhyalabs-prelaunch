@@ -1,0 +1,33 @@
+:root{
+  --bg:#f7f8f3; --ink:#17261e; --muted:#5d6b63; --green:#1f6b4a; --green-d:#155038; --leaf:#e3f0e8;
+  --sun:#f2a30f; --sun-l:#fdf2d9; --card:#fff; --line:#e2e6dc; --wa:#1faa59;
+  --r:18px; --shadow:0 6px 24px rgba(23,38,30,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+h1,h2,h3,h4{line-height:1.15;margin:0 0 .5em;letter-spacing:-.02em}
+h1{font-size:clamp(2.1rem,5.4vw,3.6rem);font-weight:800}
+h2{font-size:clamp(1.6rem,3.4vw,2.35rem);font-weight:800}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0 0 1em}
+a{color:var(--green);text-decoration:none}
+img,svg{max-width:100%}
+.wrap{width:min(1120px,100% - 40px);margin-inline:auto}
+.eyebrow{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green);background:var(--leaf);padding:.35em .85em;border-radius:99px;margin-bottom:1rem}
+.muted{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;font:inherit;font-weight:700;border:0;border-radius:99px;padding:.85em 1.4em;cursor:pointer;transition:transform .12s,box-shadow .12s,background .12s;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(31,107,74,.28)}
+.btn-primary:hover{background:var(--green-d)}
+.btn-wa{background:var(--wa);color:#fff;box-shadow:0 6px 16px rgba(31,170,89,.28)}
+.btn-ghost{background:#fff;color:var(--green);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--green)}
+.btn-block{width:100%}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.chip{display:inline-block;padding:.35em .8em;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:.88rem;font-weight:600;color:var(--ink)}
+input,select,textarea{font:inherit;color:inherit;width:100%;padding:.8em 1em;border:1.5px solid var(--line);border-radius:14px;background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(31,107,74,.14)}
+label{display:block;font-weight:600;font-size:.92rem;margin:0 0 .35em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

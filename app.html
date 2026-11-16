@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>VidhyaLabs</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="VidhyaLabs">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css">
+<style>
+html,body{height:100%}
+body{background:#e9ede4;overscroll-behavior-y:none}
+#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column;background:var(--bg);position:relative;box-shadow:0 0 0 1px var(--line)}
+.appbar{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:#fff;border-bottom:1px solid var(--line)}
+.appbar img{height:34px;width:auto;display:block}
+.appbar a{color:var(--green);font-size:.85rem;font-weight:700}
+#screen{flex:1;overflow-y:auto;padding:16px 16px 24px;-webkit-overflow-scrolling:touch}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-size:.7rem;font-weight:700;color:var(--muted);position:relative}
+.tabs a i{font-style:normal;font-size:1.3rem;line-height:1}
+.tabs a.on{color:var(--green)}
+.tabs a.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 4px 4px;background:var(--green)}
+.badge{position:absolute;top:4px;left:calc(50% + 8px);min-width:18px;height:18px;border-radius:99px;background:var(--sun);color:#3a2800;font-size:.68rem;display:none;align-items:center;justify-content:center;padding:0 5px}
+.badge.show{display:flex}
+h2.s{font-size:1.25rem;margin:.2rem 0 .8rem}
+.hero-card{background:linear-gradient(135deg,var(--green),#2a8a5f);color:#fff;border-radius:22px;padding:18px;margin-bottom:16px}
+.hero-card h2{font-size:1.35rem;margin-bottom:.3rem}
+.hero-card p{margin:0 0 .8rem;color:#e6f3ec;font-size:.92rem}
+.hero-card .tk{background:rgba(255,255,255,.16);border-radius:12px;padding:.5rem .8rem;font-size:.85rem}
+.hero-card .tk b{transition:opacity .3s}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.tile-b{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center;font-weight:700;font-size:.8rem;cursor:pointer;border-top:0;font-family:inherit;color:var(--ink)}
+.tile-b i{display:block;font-style:normal;font-size:1.7rem;margin-bottom:3px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin:0 -16px 10px;padding-inline:16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;font:inherit;font-weight:700;font-size:.85rem;padding:.45em 1em;border-radius:99px;background:#fff;border:1.5px solid var(--line);color:var(--ink);cursor:pointer}
+.chips button.on{background:var(--green);border-color:var(--green);color:#fff}
+.search{margin-bottom:10px}
+.item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.item .ico,.line .ico{font-size:1.8rem;width:52px;height:52px;display:grid;place-items:center;background:var(--leaf);border-radius:13px;flex:none;overflow:hidden}
+.ico img{width:100%;height:100%;object-fit:cover;display:block}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;padding:.15em .7em;border-radius:99px;background:var(--sun-l);color:#6b5516;margin-bottom:.2rem}
+.pill.ok{background:var(--leaf);color:var(--green-d)}
+.thread{display:grid;gap:8px;margin-bottom:12px}
+.bubble{background:var(--green);color:#fff;border-radius:16px 16px 4px 16px;padding:10px 12px;max-width:88%;justify-self:end}
+.bubble.team{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:16px 16px 16px 4px;justify-self:start}
+.bubble p{margin:0 0 .2rem;white-space:pre-wrap;word-break:break-word}
+.bubble small{opacity:.8;font-size:.72rem}
+.item .meta{flex:1;min-width:0}
+.item .meta b{display:block;font-size:.95rem;line-height:1.25}
+.item .meta small{display:block;color:var(--muted);font-size:.78rem;line-height:1.3}
+.item .price{font-weight:800;color:var(--green);font-size:.88rem}
+.item .price em{font-style:normal;font-weight:600;color:var(--muted);font-size:.78rem}
+.item .price.q{color:var(--muted);font-weight:600;font-size:.78rem}
+.add{font:inherit;font-weight:800;color:var(--green);background:#fff;border:1.5px solid var(--green);border-radius:99px;padding:.4em 1.1em;cursor:pointer}
+.add:active{background:var(--leaf)}
+.step-ctl{display:inline-flex;align-items:center;background:var(--green);border-radius:99px;color:#fff}
+.step-ctl button{font:inherit;font-weight:800;font-size:1.1rem;width:34px;height:34px;border:0;background:transparent;color:#fff;cursor:pointer}
+.step-ctl span{min-width:22px;text-align:center;font-weight:800}
+.line{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.line .top{display:flex;gap:10px;align-items:center}
+.line .top .meta{flex:1}
+.line .top b{display:block;font-size:.95rem}
+.line .top small{color:var(--muted);font-size:.78rem}
+.line .sub{margin-top:8px;display:grid;gap:8px}
+.line select,.line input{padding:.55em .8em;border-radius:11px;font-size:.88rem}
+.totals{background:var(--sun-l);border:1px solid #f3dca4;border-radius:16px;padding:12px 14px;margin:6px 0 14px}
+.totals .r{display:flex;justify-content:space-between;font-weight:700}
+.totals small{display:block;color:#6b5516;margin-top:4px;font-size:.78rem}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.panel h3{margin-bottom:.6rem}
+.field{margin-bottom:.8rem}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+.empty i{display:block;font-style:normal;font-size:2.6rem;margin-bottom:.4rem}
+.order{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;font-size:.88rem}
+.order .h{display:flex;justify-content:space-between;font-weight:800;margin-bottom:4px}
+.order ul{margin:.3rem 0 .6rem;padding-left:1.1rem;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,20px);background:#10201a;color:#fff;padding:.65em 1.2em;border-radius:99px;font-weight:600;font-size:.88rem;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.install{background:var(--sun-l);border:1px solid #f3dca4;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:.9rem;display:flex;gap:10px;align-items:center}
+.install p{margin:0;flex:1}
+.hidden{display:none!important}
+.links a{display:block;padding:.7em 0;border-bottom:1px solid var(--line);font-weight:600}
+.links a:last-child{border:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="appbar"><img src="images/logo-lockup.png" alt="VidhyaLabs"><a href="index.html">Website</a></div>
+  <div id="screen" aria-live="polite"></div>
+  <nav class="tabs" aria-label="App">
+    <a href="#home" data-tab="home"><i>🏠</i>Home</a>
+    <a href="#shop" data-tab="shop"><i>🛒</i>Shop</a>
+    <a href="#services" data-tab="services"><i>🧹</i>Services</a>
+    <a href="#cart" data-tab="cart"><i>🧺</i>Cart<span class="badge" id="badge">0</span></a>
+    <a href="#me" data-tab="me"><i>👤</i>Me</a>
+  </nav>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
