@@ -3,7 +3,7 @@
 ## 1. Backend and database (Vercel + Postgres, about 5 minutes)
 The API lives in `api/index.js` and stores everything in a Postgres database. The website, app, admin, driver and store pages already call it at `/api`.
 1. Vercel dashboard > your project > **Storage** > **Create Database** > **Neon (Postgres)** > create it and **connect it to this project** (all environments). Vercel adds `DATABASE_URL` automatically.
-2. Project **Settings > Environment Variables** > add `ADMIN_KEY` = your admin password (use a long one; mark it Sensitive). Apply to Production, Preview and Development.
+2. Project **Settings > Environment Variables** > add `ADMIN_KEY` = your admin password (use a long one; mark it Sensitive). `ADMIN_PASSWORD` also works if it is already set. Apply to Production, Preview and Development.
 3. **Deployments > latest > Redeploy** so the new variables take effect. The tables are created automatically on the first request.
 4. Check `https://vidhyalabs.com/api?db=1`. It should show `"database":"connected"` and `"admin":"configured"`.
 5. Open `https://vidhyalabs.com/admin.html` and sign in with `ADMIN_KEY`.

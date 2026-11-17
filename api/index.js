@@ -2,7 +2,7 @@
 /* POST /api  { type: 'order' | 'message' | 'signup' | 'track' | 'store_apply' | 'driver' | 'store' | 'admin', ... }
    GET  /api  health check; add ?db=1 to also test the database connection. */
 const db = require('../lib/db');
-const { handle } = require('../lib/vl');
+const { handle, adminKey } = require('../lib/vl');
 
 function send(res, code, body) {
   res.statusCode = code;
@@ -26,7 +26,7 @@ function readBody(req) {
 module.exports = async function (req, res) {
   try {
     if (req.method === 'GET' || req.method === 'HEAD') {
-      const out = { ok: true, service: 'vidhyalabs', database: db.configured() ? 'configured' : 'missing', admin: process.env.ADMIN_KEY ? 'configured' : 'missing' };
+      const out = { ok: true, service: 'vidhyalabs', database: db.configured() ? 'configured' : 'missing', admin: adminKey() ? 'configured' : 'missing' };
       if ((req.url || '').indexOf('db=1') > -1 && db.configured()) {
         try { await db.run('SELECT 1'); out.database = 'connected'; } catch (e) { out.database = 'error'; }
       }
