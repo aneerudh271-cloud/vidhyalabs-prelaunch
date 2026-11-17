@@ -1,5 +1,5 @@
 /* Network-first service worker: always fresh when online, works offline from cache. */
-var V = 'vl-v2';
+var V = 'vl-v3';
 var ASSETS = ['./', 'index.html', 'app.html', 'app.js', 'data.js', 'styles.css', 'legal.html', 'manifest.webmanifest',
   'images/logo-lockup.png', 'images/milk-bottles.jpg', 'images/cleaning.jpg', 'images/carwash.jpg', 'images/repairs.jpg', 'images/bottle-boiled-500.jpg', 'images/bottle-boiled-1l.jpg', 'images/bottle-nonboiled-500.jpg', 'images/bottle-nonboiled-1l.jpg', 'images/svc-electrician.jpg', 'images/svc-plumbing.jpg', 'images/svc-appliance.jpg',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon.png'];
@@ -14,7 +14,8 @@ self.addEventListener('activate', function (e) {
 });
 self.addEventListener('fetch', function (e) {
   var req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  var u = new URL(req.url);
+  if (req.method !== 'GET' || u.origin !== location.origin || u.pathname.indexOf('/api') === 0) return;
   e.respondWith(
     fetch(req).then(function (res) {
       var copy = res.clone();

@@ -8,7 +8,7 @@ window.VL = (function () {
     areas: ['Indus Town', 'Krishnapuram', 'Radhapuram'],
     cutoff: '9pm',
     slot: '6–8am',
-    formEndpoint: ''                   // Paste your deployed Apps Script web app URL (see SETUP.md). Needed for orders, messages, signups and the admin page.
+    formEndpoint: '/api'                // Postgres-backed API on this site (api/index.js). See SETUP.md.
   };
 
   const herd = ('Kokila,Tulsi,Bijli,Savitri,Mangla,Gauri,Heera,Pari,Sundari,Veena,Kapila,Rani,Lalita,Chameli,Narmada,' +
