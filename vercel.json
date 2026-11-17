@@ -1,8 +1,41 @@
 {
   "cleanUrls": false,
-  "functions": { "api/index.js": { "maxDuration": 15 } },
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 15
+    }
+  },
   "headers": [
-    { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
-    { "source": "/(admin|driver|store).html", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/(admin|driver|store).html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.vidhyalabs.com"
+        }
+      ],
+      "destination": "https://vidhyalabs.com/$1",
+      "permanent": true
+    }
   ]
 }
