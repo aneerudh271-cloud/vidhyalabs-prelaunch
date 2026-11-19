@@ -40,7 +40,7 @@
   function change(id, d) {
     var line = null, idx = -1;
     for (var i = 0; i < cart.length; i++) if (cart[i].id === id) { line = cart[i]; idx = i; }
-    if (!line && d > 0) { cart.push({ id: id, qty: 1, plan: 'Once', note: '' }); toast(byId(id).name + ' added'); }
+    if (!line && d > 0) { cart.push({ id: id, qty: 1, plan: 'Once', note: '' }); toast(byId(id).cat === 'milk' ? 'Milk added. Choose Monthly in your cart for a free lactometer kit' : byId(id).name + ' added'); }
     else if (line) { line.qty += d; if (line.qty <= 0) cart.splice(idx, 1); }
     saveCart();
   }
@@ -79,6 +79,7 @@
     var h = '<h2 class="s">' + (kind === 'goods' ? 'Shop daily essentials' : 'Home services') + '</h2>';
     h += '<input class="search" id="q" type="search" placeholder="Search" value="' + esc(view.q) + '" aria-label="Search">';
     h += '<div class="chips">' + cats.map(function (c) { return '<button data-act="cat" data-key="' + key + '" data-k="' + c.k + '" class="' + (view[key] === c.k ? 'on' : '') + '">' + c.l + '</button>'; }).join('') + '</div>';
+    if (kind === 'goods' && (view.shopCat === 'milk' || view.shopCat === 'all') && !q) h += milkOffer(false);
     h += '<div id="list">' + (list.length ? list.map(itemHTML).join('') : '<div class="empty"><i>🔍</i>Nothing found. Message our team and we will help.</div>') + '</div>';
     if (kind === 'goods') h += '<p class="muted" style="font-size:.82rem">' + (view.shopCat === 'veg' || view.shopCat === 'fruit' ? 'Prices are per pack as listed. Fresh produce prices can change with the market, and our team confirms the final price with your order.' : 'Milk prices are fixed. For other items our team confirms the price with your order.') + '</p>';
     return h;
@@ -105,6 +106,18 @@
     return h;
   }
 
+  /* Milk subscription offer: monthly plan comes with a free lactometer testing kit. */
+  function milkLines() { return cart.filter(function (l) { var it = byId(l.id); return it && it.cat === 'milk'; }); }
+  function milkOffer(inCart) {
+    var ml = milkLines();
+    if (inCart) {
+      if (!ml.length) return '';
+      if (ml.every(function (l) { return l.plan === 'Monthly'; }))
+        return '<div class="offer ok"><i>✅</i><div><b>Monthly milk subscription</b><br>A free lactometer testing kit will come with your first delivery, so you can check your milk at home.</div></div>';
+      return '<div class="offer"><i>🧪</i><div><b>Subscribe monthly and get a free lactometer testing kit</b><br>Test your milk\'s quality at home. Pause, skip or cancel any time.<br><button class="btn btn-primary" style="margin-top:.6rem" data-act="milkmonthly">Make my milk Monthly</button></div></div>';
+    }
+    return '<div class="offer"><i>🧪</i><div><b>Subscribe to our milk monthly and get a free lactometer testing kit</b><br>Add your milk, then choose Monthly in the cart.</div></div>';
+  }
   function cartTotals() {
     var total = 0, unpriced = 0;
     cart.forEach(function (l) { var it = byId(l.id); if (!it) return; if (it.price == null) unpriced++; else total += it.price * l.qty; });
@@ -124,6 +137,7 @@
         '<div style="display:flex;justify-content:space-between;margin-top:6px;font-weight:700;font-size:.9rem"><span class="muted" style="font-weight:600">' + (it.price != null ? inr(it.price) + (it.unit ? ' ' + esc(it.unit) : '') : 'Price to be confirmed') + '</span><span>' + (it.price != null ? inr(it.price * l.qty) : '—') + '</span></div>' +
         (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
     }).join('');
+    h += milkOffer(true);
     var t = cartTotals();
     h += '<div class="totals"><div class="r"><span>Total (priced items)</span><span id="tot">' + inr(t.total) + '</span></div><small>' + (t.unpriced ? t.unpriced + ' item(s) will be priced by our team. ' : '') + 'Subscription lines show the price per delivery. Service booking fees are adjusted in your final bill.</small></div>';
     h += '<div class="panel"><h3>Delivery details</h3>' +
@@ -223,6 +237,7 @@
     if (!addr) return toast('Please enter your address');
     profile = { name: name, phone: phone, area: area, address: addr }; store.set('vl_profile', profile);
     var t = cartTotals(), lines = cart.map(function (l) { return { text: lineText(l), id: l.id, qty: l.qty, plan: l.plan, note: l.note }; });
+    if (milkLines().length && milkLines().every(function (l) { return l.plan === 'Monthly'; })) lines.push({ text: 'FREE lactometer testing kit (monthly milk subscription, first delivery)', id: 'kit-lactometer', qty: 1 });
     var order = { id: 'VL' + Date.now().toString(36).toUpperCase().slice(-6), at: new Date().toISOString(), total: t.total, unpriced: t.unpriced, lines: lines,
       customer: { name: name, phone: phone, area: area, address: addr }, payment: v('f-pay'), slot: v('f-slot'), when: v('f-when'), notes: v('f-notes') };
     order.sent = sendToTeam('order', order);
@@ -243,6 +258,7 @@
     } else if (act === 'cat') { view[el.getAttribute('data-key')] = el.getAttribute('data-k'); render(); }
     else if (act === 'go') { var to = el.getAttribute('data-to'), cat = el.getAttribute('data-cat'); if (cat) view[to === 'shop' ? 'shopCat' : 'svcCat'] = cat; location.hash = '#' + to; if (current() === to) render(); }
     else if (act === 'checkout') checkout();
+    else if (act === 'milkmonthly') { milkLines().forEach(function (l) { l.plan = 'Monthly'; }); saveCart(); var k2 = screen.scrollTop; render(); screen.scrollTop = k2; toast('Monthly plan set. Free lactometer kit included'); }
     else if (act === 'sendmsg') {
       var ta = document.getElementById('msg'), text = ta ? ta.value.trim() : '';
       if (!text) return toast('Type a message first');
@@ -264,7 +280,7 @@
   });
   screen.addEventListener('change', function (e) {
     var el = e.target, act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
-    if (act === 'plan') { cart.forEach(function (l) { if (l.id === id) l.plan = el.value; }); store.set('vl_cart', cart); }
+    if (act === 'plan') { var isMilk = false; cart.forEach(function (l) { if (l.id === id) { l.plan = el.value; var it0 = byId(l.id); if (it0 && it0.cat === 'milk') isMilk = true; } }); store.set('vl_cart', cart); if (isMilk) { var k3 = screen.scrollTop; render(); screen.scrollTop = k3; } }
   });
   screen.addEventListener('input', function (e) {
     var el = e.target;
