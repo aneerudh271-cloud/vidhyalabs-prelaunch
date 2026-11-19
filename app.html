@@ -89,6 +89,46 @@ h2.s{font-size:1.25rem;margin:.2rem 0 .8rem}
 .offer{display:flex;gap:10px;align-items:flex-start;background:var(--leaf);border:1px solid #bcdcc9;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:.9rem}
 .offer>i{font-style:normal;font-size:1.4rem;line-height:1}
 .offer.ok{background:#fff}
+.lvl{margin:.2rem 0 .6rem}
+.lvl-top{display:flex;align-items:center;gap:8px;margin-bottom:.45rem;flex-wrap:wrap}
+.lvl-chip{font-weight:800;font-size:.85rem;background:var(--sun);color:#3a2800;border-radius:99px;padding:.2em .8em}
+.lvl-streak{font-weight:800;font-size:.8rem;background:#fff3e0;color:#9a4b00;border-radius:99px;padding:.2em .7em}
+.lvl .bar{height:9px;border-radius:99px;background:rgba(0,0,0,.12);overflow:hidden}
+.lvl .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ffd666,#ffb300);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.lvl small{display:block;margin-top:.35rem;font-size:.78rem;opacity:.9}
+.panel .lvl-chip{background:var(--sun-l)}
+.panel .lvl .bar{background:var(--leaf)}
+.cd{font-size:.82rem;font-weight:700;margin:0 0 .7rem;color:#6b5516;background:var(--sun-l);border:1px solid #f3dca4;border-radius:12px;padding:.45rem .8rem}
+.hero-card .cd{color:#fff;background:rgba(255,255,255,.16);border:0;margin:.5rem 0}
+.herd{display:flex;flex-wrap:wrap;gap:8px}
+.cow{display:inline-flex;align-items:center;gap:5px;background:var(--leaf);color:var(--green-d);border-radius:99px;padding:.3em .8em .3em .5em;font-size:.82rem;font-weight:700}
+.cow i{font-style:normal;font-size:1.1rem}
+.badges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.bd{display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px 10px;background:#f6f7f2;opacity:.7}
+.bd i{grid-row:span 2;font-style:normal;font-size:1.5rem;text-align:center}
+.bd b{font-size:.8rem;line-height:1.2}
+.bd small{font-size:.68rem;color:var(--muted);line-height:1.25}
+.bd.on{background:var(--leaf);border-color:#bcdcc9;opacity:1}
+.panel .more{float:right;font-size:.8rem;font-weight:700;color:var(--green)}
+.quest{background:linear-gradient(135deg,#fff,var(--leaf));border-color:#bcdcc9}
+.win{background:var(--leaf);border-color:#bcdcc9;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+.goal{background:#fff;border:1px dashed #bcdcc9;border-radius:14px;padding:.6rem .85rem;margin-bottom:14px;font-size:.86rem}
+.track{list-style:none;display:flex;margin:.6rem 0 .3rem;padding:0}
+.track li{flex:1;text-align:center;position:relative;font-size:.66rem;color:var(--muted);font-weight:700}
+.track li i{display:block;width:14px;height:14px;border-radius:50%;background:#dfe4d8;margin:0 auto 4px;position:relative;z-index:1}
+.track li::before{content:"";position:absolute;top:6px;left:-50%;width:100%;height:3px;background:#dfe4d8}
+.track li:first-child::before{display:none}
+.track li.done i,.track li.now i{background:var(--green)}
+.track li.done::before,.track li.now::before{background:var(--green)}
+.track li.now{color:var(--green-d)}
+.track li.now i{box-shadow:0 0 0 4px var(--leaf)}
+#cartbar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--green);color:#fff;font-weight:600;font-size:.9rem;padding:.7rem 16px;cursor:pointer;border:0;font-family:inherit;text-align:left;width:100%}
+#cartbar .go{font-weight:800;white-space:nowrap}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+.confetti span{position:absolute;top:-30px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(360deg);opacity:.9}}
+@media (prefers-reduced-motion:reduce){.confetti{display:none}.lvl .bar i,.win{animation:none;transition:none}}
 .install{background:var(--sun-l);border:1px solid #f3dca4;border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:.9rem;display:flex;gap:10px;align-items:center}
 .install p{margin:0;flex:1}
 .hidden{display:none!important}
@@ -100,6 +140,7 @@ h2.s{font-size:1.25rem;margin:.2rem 0 .8rem}
 <div id="app">
   <div class="appbar"><img src="images/logo-lockup.png" alt="VidhyaLabs"><a href="index.html">Website</a></div>
   <div id="screen" aria-live="polite"></div>
+  <button id="cartbar" class="hidden" type="button" aria-label="View cart"></button>
   <nav class="tabs" aria-label="App">
     <a href="#home" data-tab="home"><i>🏠</i>Home</a>
     <a href="#shop" data-tab="shop"><i>🛒</i>Shop</a>
