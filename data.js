@@ -77,13 +77,15 @@ window.VL = (function () {
     { id: 'dal-tatag1', kind: 'goods', cat: 'groceries', name: 'Tata Sampann Unpolished Gulbarga Toor Dal', variant: '1 kg', price: 196, emoji: '🫘' },
     { id: 'dal-mang1', kind: 'goods', cat: 'groceries', name: 'Mangat Ram Unpolished Arhar / Toor Dal', variant: '1 kg', price: 203, emoji: '🫘' },
     // Water
-    { id: 'w-bottle', kind: 'goods', cat: 'water', name: 'Packaged drinking water', variant: 'Bottles', price: null, emoji: '💧', sub: true },
+    { id: 'w-bottle', kind: 'goods', cat: 'water', name: 'Packaged drinking water', variant: 'Bottle', price: 40, unit: 'per bottle', emoji: '💧', sub: true },
     { id: 'w-jar', kind: 'goods', cat: 'water', name: 'Drinking water jar', variant: '20 litre', price: null, emoji: '🫙', sub: true },
     // Newspapers
     { id: 'n-daily', kind: 'goods', cat: 'news', name: 'Daily newspaper', variant: 'Tell us which paper (subject to availability)', price: null, emoji: '🗞️', sub: true },
     // Home services
     { id: 's-clean', img: 'images/cleaning.jpg', kind: 'service', cat: 'cleaning', name: 'Home cleaning', variant: 'Regular, deep, kitchen, bathroom, move-in/out', price: 300, unit: 'per hour', qtyLabel: 'hours', emoji: '🧹' },
     // Vehicle
+    { id: 'v-car-detail', img: 'images/carwash.jpg', kind: 'service', cat: 'vehicle', name: 'Car detailing', variant: 'One-time detailing', price: 500, unit: 'per car', emoji: '✨' },
+    { id: 'v-car-care', img: 'images/carwash.jpg', kind: 'service', cat: 'vehicle', name: 'Monthly car care', variant: 'Daily cleaning', price: 600, unit: 'per month', emoji: '🚗' },
     { id: 'v-car-ext', img: 'images/carwash.jpg', kind: 'service', cat: 'vehicle', name: 'Car exterior wash', variant: 'Daily, weekly or monthly plans', price: null, emoji: '🚗', sub: true },
     { id: 'v-car-int', img: 'images/carwash.jpg', kind: 'service', cat: 'vehicle', name: 'Car interior cleaning', variant: 'Daily, weekly or monthly plans', price: null, emoji: '🧽', sub: true },
     { id: 'v-bike', img: 'images/carwash.jpg', kind: 'service', cat: 'vehicle', name: 'Bike / scooter wash', variant: 'Daily, weekly or monthly plans', price: null, emoji: '🛵', sub: true },
