@@ -34,6 +34,16 @@ main{padding:16px 0 60px}
 .empty{text-align:center;color:var(--muted);padding:40px 10px}
 .err{color:#b3261e;font-weight:600;margin:.6rem 0 0}
 .hidden{display:none!important}
+.banner{background:var(--sun-l);color:#6b5516;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:.92rem;font-weight:600}
+.prod{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.prod .g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:.5rem 0}
+.prod label{font-size:.78rem;font-weight:700;color:var(--muted)}
+.prod input[type=number],.add input,.add select{width:100%;box-sizing:border-box}
+.add{background:#fff;border:1px dashed var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.add h3{margin:0 0 .6rem;font-size:1rem}
+.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btns .btn{padding:.5em 1.1em}
+.lnk{background:none;border:0;color:#b3261e;font:inherit;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -41,7 +51,7 @@ main{padding:16px 0 60px}
 <main class="wrap">
   <div class="card login hidden" id="login">
     <h2 style="font-size:1.3rem">Store sign in</h2>
-    <p class="muted">Use the phone number you applied with and the PIN given by the VidhyaLabs team. Not a partner yet? <a href="partner.html">Apply to join</a>.</p>
+    <p class="muted">Use the phone number you applied with and the 6-digit PIN you chose when you applied. Not a partner yet? <a href="partner.html">Apply to join</a>.</p>
     <form id="form">
       <div style="margin-bottom:.8rem"><label for="ph">Phone number</label><input id="ph" type="tel" inputmode="tel" autocomplete="username" required></div>
       <div><label for="pin">PIN</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" required></div>
@@ -50,7 +60,8 @@ main{padding:16px 0 60px}
     </form>
   </div>
   <div id="app" class="hidden">
-    <div class="tabs"><button data-f="todo" class="on">To pack <span id="n-todo"></span></button><button data-f="done">Handed over <span id="n-done"></span></button></div>
+    <div id="banner"></div>
+    <div class="tabs"><button data-f="todo" class="on">To pack <span id="n-todo"></span></button><button data-f="done">Handed over <span id="n-done"></span></button><button data-f="prod">My products <span id="n-prod"></span></button></div>
     <div id="list"></div>
   </div>
 </main>
@@ -59,7 +70,7 @@ main{padding:16px 0 60px}
 (function () {
   'use strict';
   var C = VL.config, $ = function (i) { return document.getElementById(i); };
-  var st = { phone: '', pin: '', f: 'todo', orders: [], busy: false }, timer = null;
+  var st = { phone: '', pin: '', f: 'todo', orders: [], items: [], status: '', busy: false }, timer = null;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function when(t) { var d = new Date(t); return isNaN(d) ? '' : d.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }); }
   function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k) || ''; if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} return ''; }
@@ -78,7 +89,9 @@ main{padding:16px 0 60px}
     return api({ action: 'list' }).then(function (r) {
       st.busy = false;
       if (!r.ok) { if (r.error === 'auth' || r.error === 'locked') { signOut(); showErr(r); } return; }
-      st.orders = r.orders || []; $('who').textContent = r.store && r.store.name || ''; render();
+      st.orders = r.orders || []; st.status = r.store && r.store.status || 'Approved'; $('who').textContent = r.store && r.store.name || '';
+      if (st.status !== 'Approved') { st.items = []; render(); return; }
+      return api({ action: 'items' }).then(function (ri) { if (ri.ok) st.items = ri.items || []; render(); });
     });
   }
   function isTodo(o) { return o.status === 'Placed' || o.status === 'Confirmed'; }
@@ -86,8 +99,28 @@ main{padding:16px 0 60px}
     var todo = st.orders.filter(isTodo), done = st.orders.filter(function (o) { return !isTodo(o); });
     $('n-todo').textContent = '(' + todo.length + ')'; $('n-done').textContent = '(' + done.length + ')';
     document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-f') === st.f); });
+    $('n-prod').textContent = st.status === 'Approved' ? '(' + st.items.length + ')' : '';
+    $('banner').innerHTML = st.status === 'Pending' ? '<div class="banner">Your application is under review. Our team will approve it soon. You can add products once approved, and orders start then.</div>' : '';
+    if (st.f === 'prod') { if (!keepForm()) $('list').innerHTML = prodView(); return; }
     var list = st.f === 'todo' ? todo : done;
     $('list').innerHTML = list.length ? list.map(job).join('') : '<div class="empty">' + (st.f === 'todo' ? 'No orders to pack right now.' : 'Nothing handed over in the last 2 days.') + '</div>';
+  }
+  function keepForm() { var a = document.activeElement; return !!(a && $('list').contains(a) && /INPUT|SELECT/.test(a.tagName)); }
+  function prodRow(i) {
+    var id = esc(i.id);
+    return '<div class="prod" data-p="' + id + '"><div class="row"><b>' + esc(i.name) + '</b><span class="meta">' + esc(i.variant) + '</span></div>' +
+      '<div class="g"><div><label>Your price (₹)</label><input type="number" min="0" step="0.5" inputmode="decimal" data-f="price" value="' + esc(i.price) + '"></div>' +
+      '<div><label>Stock</label><input type="number" min="0" step="1" inputmode="numeric" data-f="stock" value="' + esc(i.stock) + '"></div></div>' +
+      '<div class="btns"><label style="display:flex;gap:6px;align-items:center;font-size:.9rem"><input type="checkbox" data-f="avail"' + (i.available ? ' checked' : '') + '> Available</label><span class="sp" style="flex:1"></span>' +
+      '<button class="btn btn-primary" data-save="' + id + '">Save</button><button class="lnk" data-del="' + id + '">Remove</button></div></div>';
+  }
+  function prodView() {
+    if (st.status !== 'Approved') return '<div class="empty">Products open up once your store is approved.</div>';
+    var have = {}; st.items.forEach(function (i) { have[i.id] = 1; });
+    var cat = (VL.catalog || []).filter(function (c) { return c.kind === 'goods' && !have[c.id]; });
+    return '<div class="add"><h3>Add from our catalogue</h3><div class="btns"><select id="cat" style="flex:1;min-width:0"><option value="">Choose a product</option>' + cat.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name + (c.variant && c.variant.length < 30 ? ' · ' + c.variant : '')) + '</option>'; }).join('') + '</select><button class="btn btn-ghost" id="addcat" type="button">Add</button></div></div>' +
+      '<div class="add"><h3>Add your own product</h3><input id="cn" placeholder="Product name" style="margin-bottom:8px"><input id="cv" placeholder="Size or pack (e.g. 1 kg)" style="margin-bottom:8px"><button class="btn btn-ghost" id="addown" type="button">Add product</button></div>' +
+      (st.items.length ? st.items.map(prodRow).join('') : '<div class="empty">No products yet. Add your first one above, then set its price and stock.</div>');
   }
   function job(o) {
     return '<div class="job"><div class="row"><span><span class="id">#' + esc(o.id) + '</span> <span class="chip2 ' + (isTodo(o) ? '' : 'good') + '">' + esc(o.status) + '</span></span><span class="meta">' + when(o.at) + '</span></div>' +
@@ -98,6 +131,19 @@ main{padding:16px 0 60px}
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     if (b.hasAttribute('data-f')) { st.f = b.getAttribute('data-f'); render(); }
+    else if (b.id === 'addcat' || b.id === 'addown') {
+      var it;
+      if (b.id === 'addcat') { var cid = $('cat').value, c = (VL.catalog || []).filter(function (x) { return x.id === cid; })[0]; if (!c) return; it = { id: c.id, name: c.name, variant: c.variant || '', price: c.price == null ? 0 : c.price, stock: 0, available: false }; }
+      else { var nm = $('cn').value.trim(); if (nm.length < 2) return; it = { name: nm, variant: $('cv').value.trim(), price: 0, stock: 0, available: false }; }
+      b.disabled = true; api({ action: 'item_save', item: it }).then(function (r) { st.busy = false; if (!r.ok) $('list').insertAdjacentHTML('afterbegin', '<p class="err">Could not add. Try again.</p>'); load(); });
+    }
+    else if (b.hasAttribute('data-save')) {
+      var row = b.closest('.prod'), id = b.getAttribute('data-save'), cur = st.items.filter(function (x) { return x.id === id; })[0]; if (!cur) return;
+      var price = Number(row.querySelector('[data-f=price]').value), stock = Number(row.querySelector('[data-f=stock]').value);
+      if (!(price >= 0) || !(stock >= 0) || Math.floor(stock) !== stock) return row.insertAdjacentHTML('beforeend', '<p class="err">Enter a valid price and a whole-number stock.</p>');
+      b.disabled = true; api({ action: 'item_save', item: { id: id, name: cur.name, variant: cur.variant, price: price, stock: stock, available: row.querySelector('[data-f=avail]').checked } }).then(function (r) { st.busy = false; b.disabled = false; if (!r.ok) row.insertAdjacentHTML('beforeend', '<p class="err">Could not save. Try again.</p>'); else b.textContent = 'Saved ✓'; load(); });
+    }
+    else if (b.hasAttribute('data-del')) { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to remove'; return; } api({ action: 'item_delete', id: b.getAttribute('data-del') }).then(function () { st.busy = false; load(); }); }
     else if (b.hasAttribute('data-ready')) {
       b.disabled = true;
       api({ action: 'ready', id: b.getAttribute('data-ready') }).then(function (r) { st.busy = false; if (!r.ok) $('list').insertAdjacentHTML('afterbegin', '<p class="err">Could not update. Try again.</p>'); load(); });

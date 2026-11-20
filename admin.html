@@ -271,7 +271,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
       var did = t.getAttribute('data-driverpin') || t.getAttribute('data-drivertoggle'), dr = state.data.drivers.filter(function (x) { return x.id === did; })[0]; if (!dr) return;
       var reset = t.hasAttribute('data-driverpin'); t.disabled = true;
       call('driverSave', { id: dr.id, name: dr.name, phone: dr.phone, active: reset ? dr.active : !dr.active, resetPin: reset }).then(function (r) {
-        if (r && r.ok && r.pin) state.note = 'New PIN for ' + esc(dr.name) + ': <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the driver. Try again.');
+        if (r && r.ok && r.selfPin) state.note = 'Approved. ' + esc(sr ? sr.name : 'The store') + ' can now sign in at <b>store.html</b> with the PIN they chose when applying.'; else if (r && r.ok && r.pin) state.note = 'New PIN for ' + esc(dr.name) + ': <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the driver. Try again.');
         state.busy = false; load();
       });
     } else if (t.hasAttribute('data-store')) {

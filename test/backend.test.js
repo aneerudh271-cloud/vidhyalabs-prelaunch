@@ -120,6 +120,32 @@ const api = require('../api/index.js');
   for (let i = 0; i < 45; i++) { const x = await call({ type: 'signup', phone: '9000000002' }, '7.7.7.7'); if (x.error === 'slow down') blocked = true; }
   assert(blocked); ok('public writes rate limited per IP');
 
+  // shop self-onboarding: own PIN, pending sign-in, products
+  {
+    const ap = { type: 'store_apply', name: 'Gupta Fresh', owner: 'A Gupta', phone: '9844444444', area: 'Arera Colony', address: 'Shop 9', categories: ['Vegetables'], pin: '482913' };
+    assert.strictEqual((await call(Object.assign({}, ap, { pin: '12' }))).error, 'invalid pin'); ok('bad shop PIN rejected');
+    assert((await call(ap)).ok); ok('shop applies with its own PIN');
+    const S = (action, p) => call(Object.assign({ type: 'store', phone: '9844444444', pin: '482913', action }, p || {}));
+    let m = await S('me'); assert(m.ok && m.store.status === 'Pending'); ok('pending shop can sign in and sees status');
+    assert.strictEqual((await S('item_save', { item: { name: 'Tomato', price: 30, stock: 5 } })).error, 'not approved'); ok('pending shop cannot add products yet');
+    assert.strictEqual((await call({ type: 'store', phone: '9844444444', pin: '000000', action: 'me' })).error, 'auth'); ok('wrong shop PIN rejected');
+    const gid = (await A('list')).stores.find(x => x.phone === '9844444444').id;
+    let ar = await A('storeDecide', { id: gid, decision: 'approve' }); assert(ar.ok && ar.selfPin && !ar.pin); ok('admin approves, shop keeps its own PIN');
+    m = await S('me'); assert.strictEqual(m.store.status, 'Approved'); ok('shop now approved');
+    const sv = await S('item_save', { item: { id: 'v-tomato', name: 'Tomato', variant: '1 kg', price: 32.5, stock: 40 } }); assert(sv.ok && sv.id === 'v-tomato'); ok('shop adds a catalogue product');
+    const cu = await S('item_save', { item: { name: 'Fresh coriander', variant: 'bunch', price: 10, stock: 15 } }); assert(cu.ok && cu.id.startsWith('c')); ok('shop adds its own product');
+    assert.strictEqual((await S('item_save', { item: { name: 'X', price: -1, stock: 1 } })).error, 'invalid item'); ok('negative price rejected');
+    assert.strictEqual((await S('item_save', { item: { name: 'Okra', price: 20, stock: 1.5 } })).error, 'invalid item'); ok('fractional stock rejected');
+    await S('item_save', { item: { id: 'v-tomato', name: 'Tomato', variant: '1 kg', price: 35, stock: 0, available: false } });
+    let it = await S('items'); assert(it.ok && it.items.length === 2); const t = it.items.find(x => x.id === 'v-tomato'); assert(t.price === 35 && t.stock === 0 && t.available === false); ok('shop updates price, stock, availability');
+    await call({ type: 'store_apply', name: 'Verma Mart', owner: 'S Verma', phone: '9855555555', area: 'MP Nagar', address: 'Shop 2', pin: '135790' });
+    await A('storeDecide', { id: (await A('list')).stores.find(x => x.phone === '9855555555').id, decision: 'approve' });
+    const other = await call({ type: 'store', phone: '9855555555', pin: '135790', action: 'items' }); assert(other.ok && other.items.length === 0); ok('shops cannot see each other\'s products');
+    assert((await S('item_delete', { id: cu.id })).ok); assert.strictEqual((await S('items')).items.length, 1); ok('shop removes a product');
+    await A('storeDecide', { id: gid, decision: 'suspend' });
+    assert.strictEqual((await S('me')).error, 'auth'); ok('suspended shop locked out');
+  }
+
   // no admin key configured
   delete process.env.ADMIN_KEY;
   assert.strictEqual((await call({ type: 'admin', key: '', action: 'list' }, '3.3.3.3')).error, 'auth'); ok('no ADMIN_KEY set -> admin disabled');

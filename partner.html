@@ -51,8 +51,8 @@ footer{padding:24px 0 50px;color:var(--muted);font-size:.9rem}
     <p class="lead">Do you run a dairy, vegetable, fruit or grocery store in Bhopal? Apply to become a VidhyaLabs partner store and get orders from homes across <span id="areas">Bhopal</span>.</p>
     <ul class="perks">
       <li><i>1</i><div><b>Apply in two minutes</b><span class="muted">Tell us about your store and what you sell.</span></div></li>
-      <li><i>2</i><div><b>Our team reviews it</b><span class="muted">We check your details and contact you on the phone number you give.</span></div></li>
-      <li><i>3</i><div><b>Pack orders from your panel</b><span class="muted">Once approved, you get a PIN to see the orders to pack and mark them ready. Our drivers deliver them.</span></div></li>
+      <li><i>2</i><div><b>Set your own PIN</b><span class="muted">Choose a 6-digit PIN now. You sign in with your phone number and this PIN, no waiting for a password.</span></div></li>
+      <li><i>3</i><div><b>Add your products, we approve you</b><span class="muted">Sign in straight away to list your products, prices and stock. Once our team approves your store, you see orders to pack and mark them ready. Our drivers deliver them.</span></div></li>
     </ul>
   </div>
   <div class="card form">
@@ -75,11 +75,15 @@ footer{padding:24px 0 50px;color:var(--muted);font-size:.9rem}
         </div></div>
       <div class="field"><label for="fssai">FSSAI licence number (if you have one)</label><input id="fssai" autocomplete="off"></div>
       <div class="field"><label for="notes">Anything else we should know?</label><textarea id="notes" rows="2"></textarea></div>
+      <div class="two">
+        <div class="field"><label for="pin">Choose a 6-digit PIN *</label><input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+        <div class="field"><label for="pin2">Confirm PIN *</label><input id="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+      </div>
       <label class="consent"><input type="checkbox" id="consent"> <span>I agree that VidhyaLabs may contact me about this application. See the <a href="legal.html#privacy">Privacy Policy</a>.</span></label>
       <p class="err hidden" id="err"></p>
       <button class="btn btn-primary btn-block" style="margin-top:1rem" type="submit" id="go">Submit application</button>
     </form>
-    <div class="ok hidden" id="ok"><h2 style="font-size:1.4rem">Application received 🎉</h2><p class="muted">Thank you. Our team will review it and contact you on the phone number you gave. After approval you can sign in at <a href="store.html">Store login</a> with the PIN we share.</p></div>
+    <div class="ok hidden" id="ok"><h2 style="font-size:1.4rem">Application received 🎉</h2><p class="muted">Thank you. Our team will review it and contact you on the phone number you gave. You can already sign in at <a href="store.html">Store login</a> with your phone number and PIN to add your products, prices and stock. Orders start once our team approves your store.</p></div>
   </div>
 </main>
 <footer><div class="wrap">© 2026 VidhyaLabs · <a href="index.html">Home</a> · <a href="legal.html#privacy">Privacy</a></div></footer>
@@ -98,11 +102,13 @@ footer{padding:24px 0 50px;color:var(--muted);font-size:.9rem}
     if (phone.length !== 10) return show('Please enter a valid 10-digit phone number.');
     if (!v('area')) return show('Please choose your area.');
     if (!v('address')) return show('Please enter the store address.');
+    if (!/^\d{6}$/.test(v('pin'))) return show('Please choose a PIN of exactly 6 digits.');
+    if (v('pin') !== v('pin2')) return show('The two PINs do not match.');
     if (!$('consent').checked) return show('Please tick the box so we can contact you.');
     if (!C.formEndpoint) return show('Applications cannot be sent yet because the backend is not connected. Please try again later.');
     var cats = Array.prototype.map.call(document.querySelectorAll('input[name=cat]:checked'), function (x) { return x.value; });
     $('go').disabled = true; $('go').textContent = 'Sending…';
-    fetch(C.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: 'store_apply', name: v('name'), owner: v('owner'), phone: phone, area: v('area'), address: v('address'), categories: cats, fssai: v('fssai'), notes: v('notes') }) })
+    fetch(C.formEndpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: 'store_apply', name: v('name'), owner: v('owner'), phone: phone, area: v('area'), address: v('address'), categories: cats, fssai: v('fssai'), notes: v('notes'), pin: v('pin') }) })
       .then(function (r) { return r.json(); }).catch(function () { return { ok: false, error: 'network' }; })
       .then(function (r) {
         $('go').disabled = false; $('go').textContent = 'Submit application';
