@@ -218,9 +218,14 @@
     }
     return '<div class="offer"><i>🧪</i><div><b>Subscribe to our milk monthly and get a free lactometer testing kit</b><br>Add your milk, then choose Monthly in the cart.</div></div>';
   }
+  /* Monthly plan on a daily-delivery item (milk, water, newspaper) is priced as the whole month: price x qty x 30 daily deliveries.
+     Items already priced per month (e.g. Monthly car care) are not multiplied. */
+  var MONTH_DAYS = 30;
+  function isMonthly(l, it) { return !!(it && it.sub && l.plan === 'Monthly' && it.price != null && it.unit !== 'per month'); }
+  function lineAmount(l, it) { return it.price * l.qty * (isMonthly(l, it) ? MONTH_DAYS : 1); }
   function cartTotals() {
     var total = 0, unpriced = 0;
-    cart.forEach(function (l) { var it = byId(l.id); if (!it) return; if (it.price == null) unpriced++; else total += it.price * l.qty; });
+    cart.forEach(function (l) { var it = byId(l.id); if (!it) return; if (it.price == null) unpriced++; else total += lineAmount(l, it); });
     return { total: total, unpriced: unpriced };
   }
   function cartScreen() {
@@ -235,13 +240,13 @@
       if (it.sub) sub += '<select data-act="plan" data-id="' + l.id + '" aria-label="Delivery plan">' + PLANS.map(function (p) { return '<option' + (l.plan === p ? ' selected' : '') + '>' + p + '</option>'; }).join('') + '</select>';
       if (it.price == null) sub += '<input data-act="note" data-id="' + l.id + '" placeholder="' + (it.cat === 'news' ? 'Which newspaper?' : 'Brand, size, quantity…') + '" value="' + esc(l.note) + '">';
       return '<div class="line"><div class="top"><div class="ico">' + icoHTML(it) + '</div><div class="meta"><b>' + esc(it.name) + '</b><small>' + esc(it.variant || '') + (qtyTxt ? ' · ' + qtyTxt : '') + '</small></div><div data-ctl="' + l.id + '">' + ctl(l.id) + '</div></div>' +
-        '<div style="display:flex;justify-content:space-between;margin-top:6px;font-weight:700;font-size:.9rem"><span class="muted" style="font-weight:600">' + (it.price != null ? inr(it.price) + (it.unit ? ' ' + esc(it.unit) : '') : 'Price to be confirmed') + '</span><span>' + (it.price != null ? inr(it.price * l.qty) : '—') + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;margin-top:6px;font-weight:700;font-size:.9rem"><span class="muted" style="font-weight:600">' + (it.price != null ? (isMonthly(l, it) ? inr(it.price * l.qty) + ' × ' + MONTH_DAYS + ' days (monthly plan)' : inr(it.price) + (it.unit ? ' ' + esc(it.unit) : '')) : 'Price to be confirmed') + '</span><span>' + (it.price != null ? inr(lineAmount(l, it)) : '—') + '</span></div>' +
         (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
     }).join('');
     h += milkOffer(true);
     h += '<div class="goal">🐄 When this order is delivered, <b>' + esc(gsC.nextName) + '</b> joins your herd' + (gsC.next ? ' and you get closer to <b>' + esc(gsC.next.name) + '</b>' : '') + '.</div>';
     var t = cartTotals();
-    h += '<div class="totals"><div class="r"><span>Total (priced items)</span><span id="tot">' + inr(t.total) + '</span></div><small>' + (t.unpriced ? t.unpriced + ' item(s) will be priced by our team. ' : '') + 'Subscription lines show the price per delivery. Service booking fees are adjusted in your final bill.</small></div>';
+    h += '<div class="totals"><div class="r"><span>Total (priced items)</span><span id="tot">' + inr(t.total) + '</span></div><small>' + (t.unpriced ? t.unpriced + ' item(s) will be priced by our team. ' : '') + 'Monthly plans are priced for the whole month (30 daily deliveries). Daily and weekly plans show the price per delivery. Service booking fees are adjusted in your final bill.</small></div>';
     h += '<div class="panel"><h3>Delivery details</h3>' + 
       '<div class="field"><label for="f-name">Name *</label><input id="f-name" value="' + esc(profile.name) + '" autocomplete="name"></div>' +
       '<div class="field"><label for="f-phone">Phone *</label><input id="f-phone" type="tel" inputmode="tel" value="' + esc(profile.phone) + '" autocomplete="tel"></div>' +
@@ -329,9 +334,9 @@
   function lineText(l) {
     var it = byId(l.id), parts = [it.name + (it.variant && it.kind === 'goods' && it.price != null ? ' ' + it.variant : '')];
     var s = parts[0] + ' × ' + l.qty + (it.qtyLabel ? ' ' + it.qtyLabel : '');
-    if (it.sub && l.plan !== 'Once') s += ' — ' + l.plan;
+    if (it.sub && l.plan !== 'Once') s += ' — ' + l.plan + (isMonthly(l, it) ? ' (' + MONTH_DAYS + ' daily deliveries)' : '');
     if (l.note) s += ' (' + l.note + ')';
-    if (it.price != null) s += ' — ' + inr(it.price * l.qty);
+    if (it.price != null) s += ' — ' + inr(lineAmount(l, it));
     return s;
   }
 
