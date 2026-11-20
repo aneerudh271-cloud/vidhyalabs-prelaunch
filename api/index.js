@@ -26,7 +26,7 @@ function readBody(req) {
 module.exports = async function (req, res) {
   try {
     if (req.method === 'GET' || req.method === 'HEAD') {
-      const out = { ok: true, service: 'vidhyalabs', googleClientId: require('../lib/auth').clientId(), database: db.configured() ? 'configured' : 'missing', admin: adminKey() ? 'configured' : 'missing', google: require('../lib/auth').clientId() ? 'configured' : 'missing' };
+      const out = { ok: true, service: 'vidhyalabs', database: db.configured() ? 'configured' : 'missing', admin: adminKey() ? 'configured' : 'missing' };
       if ((req.url || '').indexOf('db=1') > -1 && db.configured()) {
         try { await db.run('SELECT 1'); out.database = 'connected'; } catch (e) { out.database = 'error'; }
       }

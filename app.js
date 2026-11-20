@@ -28,58 +28,6 @@
   var cart = store.get('vl_cart', []);
   var orders = store.get('vl_orders', []);
   var profile = store.get('vl_profile', {});
-  /* ---------- Google sign-in (switched on when GOOGLE_CLIENT_ID is set on the server) ---------- */
-  var account = store.get('vl_account', null), gid = store.get('vl_gid', ''), gisReady = false;
-  function authOn() { return !!gid; }
-  function signedIn() { return authOn() && account && account.session; }
-  function loadGIS() {
-    if (!gid || document.getElementById('gsi')) return;
-    var sc = document.createElement('script'); sc.id = 'gsi'; sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true;
-    sc.onload = function () { try { google.accounts.id.initialize({ client_id: gid, callback: onGoogle, auto_select: false }); gisReady = true; gBtn(); } catch (e) {} };
-    document.head.appendChild(sc);
-  }
-  function gBtn() {
-    var el = document.getElementById('g-btn');
-    if (el && gisReady) { try { google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', text: 'continue_with', shape: 'pill', width: 280 }); } catch (e) {} }
-  }
-  function setAccount(r) {
-    account = { session: r.session || (account && account.session), name: r.user.name, email: r.user.email, phone: r.user.phone, picture: r.user.picture || (account && account.picture) || '' };
-    store.set('vl_account', account);
-    if (account.phone) profile.phone = account.phone;
-    if (!profile.name && account.name) profile.name = account.name;
-    store.set('vl_profile', profile);
-  }
-  function onGoogle(resp) {
-    api({ type: 'login', idToken: resp && resp.credential }).then(function (r) {
-      if (!r || !r.ok) return toast('Google sign-in failed. Please try again');
-      setAccount(r); render(); toast('Signed in as ' + (account.name || account.email));
-    });
-  }
-  function savePhone(phone, name) {
-    return api({ type: 'account', session: account.session, phone: phone, name: name || '' }).then(function (r) {
-      if (r && r.ok) { setAccount(r); return true; }
-      if (r && r.error === 'login required') { account = null; store.set('vl_account', null); render(); toast('Please sign in again'); }
-      else toast(r && r.error === 'invalid mobile' ? 'Enter a valid 10-digit mobile number' : 'Could not save. Check your connection');
-      return false;
-    });
-  }
-  function initAuth() {
-    if (!C.formEndpoint) return;
-    fetch(C.formEndpoint).then(function (r) { return r.json(); }).then(function (j) {
-      var g = (j && j.googleClientId) || '';
-      if (g !== gid) { gid = g; store.set('vl_gid', gid); if (!gid) { account = null; store.set('vl_account', null); } render(); }
-      loadGIS();
-    }).catch(function () { loadGIS(); });
-  }
-  function gate() {
-    var h = '<div class="panel"><h3>Sign in to order</h3><p class="muted" style="margin:0 0 .8rem;font-size:.9rem">Continue with Google so we can save your orders and reach you about deliveries. You will add your mobile number next.</p><div id="g-btn" style="min-height:44px"></div></div>';
-    return h;
-  }
-  function phonePanel() {
-    return '<div class="panel"><h3>Add your mobile number</h3><p class="muted" style="margin:0 0 .8rem;font-size:.9rem">Signed in as <b>' + esc(account.email) + '</b>. We need your mobile number before you can place an order, so our delivery partner can reach you.</p>' +
-      '<div class="field"><label for="a-phone">Mobile number *</label><input id="a-phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="10-digit mobile number"></div>' +
-      '<button class="btn btn-primary btn-block" data-act="savephone">Save and continue</button></div>';
-  }
   var view = { shopCat: 'all', svcCat: 'all', q: '', just: null };
   var PLANS = ['Once', 'Daily', 'Weekly', 'Monthly'];
 
@@ -294,11 +242,9 @@
     h += '<div class="goal">🐄 When this order is delivered, <b>' + esc(gsC.nextName) + '</b> joins your herd' + (gsC.next ? ' and you get closer to <b>' + esc(gsC.next.name) + '</b>' : '') + '.</div>';
     var t = cartTotals();
     h += '<div class="totals"><div class="r"><span>Total (priced items)</span><span id="tot">' + inr(t.total) + '</span></div><small>' + (t.unpriced ? t.unpriced + ' item(s) will be priced by our team. ' : '') + 'Subscription lines show the price per delivery. Service booking fees are adjusted in your final bill.</small></div>';
-    if (authOn() && !signedIn()) return h + gate();
-    if (authOn() && !(account.phone && account.phone.length === 10)) return h + phonePanel();
-    h += '<div class="panel"><h3>Delivery details</h3>' + (authOn() ? '<p class="muted" style="margin:0 0 .7rem;font-size:.82rem">Signed in as ' + esc(account.email) + ' · <a href="#" data-act="signout">Sign out</a></p>' : '') +
+    h += '<div class="panel"><h3>Delivery details</h3>' + 
       '<div class="field"><label for="f-name">Name *</label><input id="f-name" value="' + esc(profile.name) + '" autocomplete="name"></div>' +
-      '<div class="field"><label for="f-phone">Phone *</label><input id="f-phone" type="tel" inputmode="tel" value="' + esc(authOn() ? account.phone : profile.phone) + '" autocomplete="tel"' + (authOn() ? ' readonly' : '') + '></div>' +
+      '<div class="field"><label for="f-phone">Phone *</label><input id="f-phone" type="tel" inputmode="tel" value="' + esc(profile.phone) + '" autocomplete="tel"></div>' +
       '<div class="field"><label for="f-area">Area *</label><select id="f-area"><option value="">Select area</option>' + C.areas.map(function (a) { return '<option' + (profile.area === a ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label for="f-addr">Full address *</label><textarea id="f-addr" rows="2" autocomplete="street-address">' + esc(profile.address) + '</textarea></div>' +
       (hasGoods ? '<div class="field"><label for="f-slot">Delivery slot</label><select id="f-slot"><option>Morning ' + esc(C.slot) + '</option><option>Evening 5–7pm</option></select></div>' : '') +
@@ -316,10 +262,9 @@
     h += '<h2 class="s">Herd Club</h2><div class="panel">' + levelCard(gm) + '</div>' +
       '<div class="panel"><h3>Your herd</h3>' + herdGrid(gm) + '</div>' +
       '<div class="panel"><h3>Badges <span class="muted" style="font-weight:600;font-size:.82rem">' + gm.badges.filter(function (x) { return x.on; }).length + ' of ' + gm.badges.length + '</span></h3>' + badgeGrid(gm) + '<p class="muted" style="margin:.7rem 0 0;font-size:.78rem">Progress counts your delivered orders and is saved on this device.</p></div>';
-    if (authOn()) h += '<h2 class="s">Account</h2>' + (signedIn() ? '<div class="panel"><p style="margin:0"><b>' + esc(account.name || 'Signed in') + '</b><br><span class="muted">' + esc(account.email) + '</span></p><p style="margin:.6rem 0 0"><a href="#" data-act="signout">Sign out</a></p></div>' : gate());
     h += '<h2 class="s">Your details</h2><div class="panel">' +
       '<div class="field"><label for="p-name">Name</label><input id="p-name" value="' + esc(profile.name) + '"></div>' +
-      '<div class="field"><label for="p-phone">Phone</label><input id="p-phone" type="tel" value="' + esc(profile.phone) + '"' + (authOn() && !signedIn() ? ' readonly' : '') + '></div>' +
+      '<div class="field"><label for="p-phone">Phone</label><input id="p-phone" type="tel" value="' + esc(profile.phone) + '"></div>' +
       '<div class="field"><label for="p-area">Area</label><select id="p-area"><option value="">Select area</option>' + C.areas.map(function (a) { return '<option' + (profile.area === a ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label for="p-addr">Address</label><textarea id="p-addr" rows="2">' + esc(profile.address) + '</textarea></div>' +
       '<button class="btn btn-primary btn-block" data-act="saveprofile">Save details</button></div>';
@@ -370,7 +315,7 @@
     screen.innerHTML = t === 'home' ? homeScreen() : t === 'shop' ? catalogScreen('goods') : t === 'services' ? catalogScreen('service') : t === 'cart' ? cartScreen() : t === 'help' ? helpScreen() : meScreen();
     screen.scrollTop = t === current() && render._last === t ? scroll : 0;
     render._last = t;
-    badge(); updateCountdowns(); checkRewards(); gBtn();
+    badge(); updateCountdowns(); checkRewards();
     clearInterval(tickTimer);
     var tk = document.getElementById('tk');
     if (tk) {
@@ -391,7 +336,6 @@
   }
 
   function checkout() {
-    if (authOn() && !(signedIn() && account.phone)) { render(); return toast('Please sign in and add your mobile number first'); }
     var v = function (id) { var e = document.getElementById(id); return e ? e.value.trim() : ''; };
     var name = v('f-name'), phone = v('f-phone').replace(/\D/g, '').slice(-10), area = v('f-area'), addr = v('f-addr');
     if (!name) return toast('Please enter your name');
@@ -403,17 +347,6 @@
     if (milkLines().length && milkLines().every(function (l) { return l.plan === 'Monthly'; })) lines.push({ text: 'FREE lactometer testing kit (monthly milk subscription, first delivery)', id: 'kit-lactometer', qty: 1 });
     var order = { id: 'VL' + Date.now().toString(36).toUpperCase().slice(-6), at: new Date().toISOString(), total: t.total, unpriced: t.unpriced, lines: lines,
       customer: { name: name, phone: phone, area: area, address: addr }, payment: v('f-pay'), slot: v('f-slot'), when: v('f-when'), notes: v('f-notes') };
-    if (authOn()) {
-      var btn = document.querySelector('[data-act="checkout"]'); if (btn) { btn.disabled = true; btn.textContent = 'Placing order…'; }
-      api(Object.assign({ type: 'order', session: account.session }, order)).then(function (r) {
-        if (r && r.ok) { order.sent = true; finishOrder(order); return; }
-        if (btn) { btn.disabled = false; btn.textContent = 'Place order'; }
-        if (r && r.error === 'login required') { account = null; store.set('vl_account', null); render(); toast('Please sign in again'); }
-        else if (r && r.error === 'mobile required') { account.phone = ''; store.set('vl_account', account); render(); toast('Add your mobile number to order'); }
-        else toast('Order not placed. Check your connection and try again');
-      });
-      return;
-    }
     order.sent = sendToTeam('order', order);
     finishOrder(order);
   }
@@ -437,8 +370,6 @@
     } else if (act === 'cat') { view[el.getAttribute('data-key')] = el.getAttribute('data-k'); render(); }
     else if (act === 'go') { var to = el.getAttribute('data-to'), cat = el.getAttribute('data-cat'); if (cat) view[to === 'shop' ? 'shopCat' : 'svcCat'] = cat; location.hash = '#' + to; if (current() === to) render(); }
     else if (act === 'checkout') checkout();
-    else if (act === 'savephone') { var pv = (document.getElementById('a-phone').value || '').replace(/\D/g, '').slice(-10); if (!/^[6-9]\d{9}$/.test(pv)) return toast('Enter a valid 10-digit mobile number'); savePhone(pv).then(function (okk) { if (okk) { render(); toast('Mobile number saved'); } }); }
-    else if (act === 'signout') { e.preventDefault(); account = null; store.set('vl_account', null); try { google.accounts.id.disableAutoSelect(); } catch (x) {} render(); toast('Signed out'); }
     else if (act === 'milkmonthly') { milkLines().forEach(function (l) { l.plan = 'Monthly'; }); saveCart(); var k2 = screen.scrollTop; render(); screen.scrollTop = k2; toast('Monthly plan set. Free lactometer kit included'); }
     else if (act === 'sendmsg') {
       var ta = document.getElementById('msg'), text = ta ? ta.value.trim() : '';
@@ -451,15 +382,13 @@
     }
     else if (act === 'install') { if (deferred) { deferred.prompt(); deferred = null; render(); } }
     else if (act === 'saveprofile') {
-      var newPhone = document.getElementById('p-phone').value.replace(/\D/g, '').slice(-10);
-      if (signedIn() && newPhone !== account.phone) { if (!/^[6-9]\d{9}$/.test(newPhone)) return toast('Enter a valid 10-digit mobile number'); savePhone(newPhone, document.getElementById('p-name').value.trim()); }
-      profile = { name: document.getElementById('p-name').value.trim(), phone: signedIn() ? newPhone : document.getElementById('p-phone').value.replace(/\D/g, '').slice(-10), area: document.getElementById('p-area').value, address: document.getElementById('p-addr').value.trim() };
+      profile = { name: document.getElementById('p-name').value.trim(), phone: document.getElementById('p-phone').value.replace(/\D/g, '').slice(-10), area: document.getElementById('p-area').value, address: document.getElementById('p-addr').value.trim() };
       store.set('vl_profile', profile); toast('Details saved');
     } else if (act === 'reorder') {
       var o = orders[Number(el.getAttribute('data-i'))]; if (!o) return;
       o.lines.forEach(function (l) { if (!byId(l.id)) return; var ex = null; cart.forEach(function (c) { if (c.id === l.id) ex = c; }); if (ex) ex.qty += l.qty; else cart.push({ id: l.id, qty: l.qty, plan: l.plan || 'Once', note: l.note || '' }); });
       saveCart(); toast('Added to cart'); location.hash = '#cart';
-    } else if (act === 'clear') { e.preventDefault(); if (confirm('Clear cart, orders and saved details on this device?')) { cart = []; orders = []; profile = {}; messages = []; account = null; ['vl_cart', 'vl_orders', 'vl_profile', 'vl_msgs', 'vl_account'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) {} }); render(); toast('Cleared'); } }
+    } else if (act === 'clear') { e.preventDefault(); if (confirm('Clear cart, orders and saved details on this device?')) { cart = []; orders = []; profile = {}; messages = []; ['vl_cart', 'vl_orders', 'vl_profile', 'vl_msgs'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) {} }); render(); toast('Cleared'); } }
   });
   screen.addEventListener('change', function (e) {
     var el = e.target, act = el.getAttribute('data-act'), id = el.getAttribute('data-id');
@@ -476,7 +405,7 @@
   /* ---------- boot ---------- */
   if (!location.hash) location.hash = '#home';
   render();
-  initAuth(); loadGIS(); sync(); setInterval(sync, 45000); setInterval(updateCountdowns, 30000);
+  sync(); setInterval(sync, 45000); setInterval(updateCountdowns, 30000);
   var cb = document.getElementById('cartbar'); if (cb) cb.addEventListener('click', function () { location.hash = '#cart'; });
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});
 })();
