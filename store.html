@@ -61,7 +61,7 @@ main{padding:16px 0 60px}
   </div>
   <div id="app" class="hidden">
     <div id="banner"></div>
-    <div class="tabs"><button data-f="todo" class="on">To pack <span id="n-todo"></span></button><button data-f="done">Handed over <span id="n-done"></span></button><button data-f="prod">My products <span id="n-prod"></span></button></div>
+    <div class="tabs"><button data-f="todo" class="on">To pack <span id="n-todo"></span></button><button data-f="done">Handed over <span id="n-done"></span></button><button data-f="prod">My products <span id="n-prod"></span></button><button data-f="prof">Profile</button></div>
     <div id="list"></div>
   </div>
 </main>
@@ -101,9 +101,26 @@ main{padding:16px 0 60px}
     document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-f') === st.f); });
     $('n-prod').textContent = st.status === 'Approved' ? '(' + st.items.length + ')' : '';
     $('banner').innerHTML = st.status === 'Pending' ? '<div class="banner">Your application is under review. Our team will approve it soon. You can add products once approved, and orders start then.</div>' : '';
+    if (st.f === 'prof') { if (!keepForm()) { $('list').innerHTML = profView(); fillProf(); } return; }
     if (st.f === 'prod') { if (!keepForm()) $('list').innerHTML = prodView(); return; }
     var list = st.f === 'todo' ? todo : done;
     $('list').innerHTML = list.length ? list.map(job).join('') : '<div class="empty">' + (st.f === 'todo' ? 'No orders to pack right now.' : 'Nothing handed over in the last 2 days.') + '</div>';
+  }
+  var CATS = ['Milk & dairy', 'Vegetables', 'Fruits', 'Groceries', 'Newspapers', 'Drinking water'];
+  function profView() {
+    return '<div class="add"><h3>Store details</h3><div id="pf"><p class="meta">Loading…</p></div></div>' +
+      '<div class="add"><h3>Change PIN</h3><input id="np" type="password" inputmode="numeric" maxlength="6" placeholder="New 6-digit PIN" autocomplete="new-password" style="margin-bottom:8px"><input id="np2" type="password" inputmode="numeric" maxlength="6" placeholder="Confirm new PIN" autocomplete="new-password" style="margin-bottom:8px"><button class="btn btn-ghost" id="chpin" type="button">Change PIN</button><p class="meta" id="pinmsg"></p></div>';
+  }
+  function fillProf() {
+    api({ action: 'profile' }).then(function (r) {
+      st.busy = false; var box = $('pf'); if (!box) return; if (!r.ok) { box.innerHTML = '<p class="err">Could not load your details.</p>'; return; }
+      var p = r.profile, areas = (C.areas || []).slice(); if (areas.indexOf(p.area) < 0) areas.unshift(p.area);
+      box.innerHTML = '<label>Store name</label><input id="pn" value="' + esc(p.name) + '" style="margin-bottom:8px"><label>Owner name</label><input id="po" value="' + esc(p.owner) + '" style="margin-bottom:8px">' +
+        '<label>Phone number (your login)</label><input id="pp" type="tel" inputmode="tel" value="' + esc(p.phone) + '" style="margin-bottom:8px"><label>Area</label><select id="pa" style="margin-bottom:8px">' + areas.map(function (a) { return '<option' + (a === p.area ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select>' +
+        '<label>Store address</label><input id="pd" value="' + esc(p.address) + '" style="margin-bottom:8px"><label>FSSAI licence number</label><input id="pf2" value="' + esc(p.fssai) + '" style="margin-bottom:8px">' +
+        '<label>What you sell</label><div class="btns" style="margin-bottom:10px">' + CATS.map(function (c) { return '<label style="display:flex;gap:6px;align-items:center;font-size:.9rem"><input type="checkbox" name="pcat" value="' + esc(c) + '"' + (p.categories.indexOf(c) > -1 ? ' checked' : '') + '> ' + esc(c) + '</label>'; }).join('') + '</div>' +
+        '<button class="btn btn-primary" id="saveprof" type="button">Save details</button><p class="meta" id="profmsg"></p>';
+    });
   }
   function keepForm() { var a = document.activeElement; return !!(a && $('list').contains(a) && /INPUT|SELECT/.test(a.tagName)); }
   function prodRow(i) {
@@ -131,6 +148,24 @@ main{padding:16px 0 60px}
   document.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     if (b.hasAttribute('data-f')) { st.f = b.getAttribute('data-f'); render(); }
+    else if (b.id === 'saveprof') {
+      var np = $('pp').value.replace(/\D/g, '').slice(-10), cats = Array.prototype.map.call(document.querySelectorAll('input[name=pcat]:checked'), function (x) { return x.value; });
+      if ($('pn').value.trim().length < 2 || $('po').value.trim().length < 2 || np.length !== 10 || !$('pd').value.trim()) { $('profmsg').className = 'err'; $('profmsg').textContent = 'Please fill the store name, owner, a 10-digit phone and the address.'; return; }
+      b.disabled = true;
+      api({ action: 'profile_save', name: $('pn').value.trim(), owner: $('po').value.trim(), new_phone: np, area: $('pa').value, address: $('pd').value.trim(), fssai: $('pf2').value.trim(), categories: cats }).then(function (r) {
+        st.busy = false; b.disabled = false;
+        if (r.ok && r.phoneChanged) { signOut(); $('err').classList.remove('hidden'); $('err').textContent = 'Phone number changed. Sign in again with your new number and the same PIN.'; return; }
+        $('profmsg').className = r.ok ? 'meta' : 'err'; $('profmsg').textContent = r.ok ? 'Saved ✓' : r.error === 'phone already used' ? 'That phone number is already used by another store.' : 'Could not save. Try again.'; if (r.ok) $('who').textContent = $('pn').value.trim();
+      });
+    }
+    else if (b.id === 'chpin') {
+      var n1 = $('np').value.trim(), n2 = $('np2').value.trim(), m = $('pinmsg'); m.className = 'err';
+      if (!/^\d{6}$/.test(n1)) { m.textContent = 'The new PIN must be exactly 6 digits.'; return; } if (n1 !== n2) { m.textContent = 'The two PINs do not match.'; return; }
+      b.disabled = true; api({ action: 'pin_change', new_pin: n1 }).then(function (r) {
+        st.busy = false; b.disabled = false;
+        if (r.ok) { st.pin = n1; ss('vl_store', JSON.stringify({ p: st.phone, k: st.pin })); $('np').value = $('np2').value = ''; m.className = 'meta'; m.textContent = 'PIN changed ✓'; } else m.textContent = 'Could not change the PIN. Try again.';
+      });
+    }
     else if (b.id === 'addcat' || b.id === 'addown') {
       var it;
       if (b.id === 'addcat') { var cid = $('cat').value, c = (VL.catalog || []).filter(function (x) { return x.id === cid; })[0]; if (!c) return; it = { id: c.id, name: c.name, variant: c.variant || '', price: c.price == null ? 0 : c.price, stock: 0, available: false }; }

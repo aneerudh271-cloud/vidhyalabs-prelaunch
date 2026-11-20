@@ -162,6 +162,37 @@ const api = require('../api/index.js');
     assert.strictEqual((await A('storeSave', Object.assign({}, base, { id: 'S-nope' }))).error, 'not found'); ok('edit unknown store rejected');
   }
 
+  // shop self-service profile / PIN; admin delete
+  {
+    const sa = await A('storeSave', { name: 'Self Edit Store', owner: 'Se', phone: '9801010101', area: 'Piplani', address: 'Shop 1' });
+    const S2 = (action, p) => call(Object.assign({ type: 'store', phone: '9801010101', pin: sa.pin, action }, p || {}));
+    const pr = await S2('profile'); assert(pr.ok && pr.profile.name === 'Self Edit Store' && pr.profile.area === 'Piplani'); ok('shop reads its profile');
+    assert.strictEqual((await S2('profile_save', { name: 'S', owner: 'x', new_phone: '9801010101', area: 'Piplani', address: 'a' })).error, 'invalid'); ok('shop profile validates');
+    let ps = await S2('profile_save', { name: 'Self Edit Store 2', owner: 'Se', new_phone: '9801010101', area: 'Karond', address: 'Shop 2', fssai: '123', categories: ['Fruits'] });
+    assert(ps.ok && !ps.phoneChanged); ok('shop edits its own details');
+    const got = (await A('list')).stores.find(x => x.id === sa.id); assert(got.name === 'Self Edit Store 2' && got.area === 'Karond' && got.categories[0] === 'Fruits'); ok('admin sees the shop edit');
+    assert.strictEqual((await S2('profile_save', { name: 'Self Edit Store 2', owner: 'Se', new_phone: '9833333333', area: 'Karond', address: 'x' })).error, 'phone already used'); ok('shop cannot take another shop\'s phone');
+    assert.strictEqual((await S2('pin_change', { new_pin: '12ab' })).error, 'invalid pin'); ok('bad new PIN rejected');
+    assert((await S2('pin_change', { new_pin: '246810' })).ok); ok('shop changes its PIN');
+    assert.strictEqual((await S2('me')).error, 'auth'); ok('old PIN stops working');
+    const S3 = (action, p) => call(Object.assign({ type: 'store', phone: '9801010101', pin: '246810', action }, p || {}));
+    assert((await S3('me')).ok); ok('new PIN works');
+    ps = await S3('profile_save', { name: 'Self Edit Store 2', owner: 'Se', new_phone: '9802020202', area: 'Karond', address: 'Shop 2' }); assert(ps.ok && ps.phoneChanged); ok('shop changes its login phone');
+    assert((await call({ type: 'store', phone: '9802020202', pin: '246810', action: 'me' })).ok); ok('same PIN works with the new phone');
+    // delete
+    assert((await call({ type: 'store', phone: '9802020202', pin: '246810', action: 'item_save', item: { name: 'Rice', price: 50, stock: 3 } })).ok);
+    assert.strictEqual((await A('storeDelete', { id: 'S-nope' })).error, 'not found'); ok('delete unknown store rejected');
+    assert((await A('storeDelete', { id: sa.id })).ok); ok('admin deletes a store');
+    assert.strictEqual((await call({ type: 'store', phone: '9802020202', pin: '246810', action: 'me' })).error, 'auth'); ok('deleted store cannot sign in');
+    assert.strictEqual((await A('list')).stores.some(x => x.id === sa.id), false); ok('deleted store gone from admin list');
+    const dd = await A('driverSave', { name: 'Del Rider', phone: '9803030303' });
+    await call({ type: 'order', id: 'VLDEL1', customer: { name: 'A', phone: '9876543210', area: 'Indus Town', address: 'B' }, lines: [{ text: 'Milk' }] });
+    await A('assign', { id: 'VLDEL1', driver: dd.id }); assert((await A('driverDelete', { id: dd.id })).ok); ok('admin deletes a rider');
+    const od = (await A('list')).orders.find(x => x.id === 'VLDEL1'); assert(!od.driver); ok('open orders of a deleted rider are unassigned');
+    assert.strictEqual((await call({ type: 'driver', phone: '9803030303', pin: dd.pin, action: 'list' })).error, 'auth'); ok('deleted rider cannot sign in');
+    const er = await A('driverSave', { id: (await A('driverSave', { name: 'Edit Rider', phone: '9804040404' })).id, name: 'Edit Rider 2', phone: '9804040404' }); assert(er.ok && !er.pin); ok('admin edits rider name, PIN unchanged');
+  }
+
   // no admin key configured
   delete process.env.ADMIN_KEY;
   assert.strictEqual((await call({ type: 'admin', key: '', action: 'list' }, '3.3.3.3')).error, 'auth'); ok('no ADMIN_KEY set -> admin disabled');
