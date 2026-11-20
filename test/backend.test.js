@@ -146,6 +146,22 @@ const api = require('../api/index.js');
     assert.strictEqual((await S('me')).error, 'auth'); ok('suspended shop locked out');
   }
 
+  // admin adds / edits shops directly
+  {
+    const base = { name: 'Raj Kirana', owner: 'Raj', phone: '9866666666', area: 'Kolar Road', address: 'Shop 7' };
+    assert.strictEqual((await A('storeSave', { name: 'R' })).error, 'invalid store'); ok('store add validates');
+    const sa = await A('storeSave', base); assert(sa.ok && sa.id && /^\d{6}$/.test(sa.pin)); ok('admin adds a store with a PIN');
+    assert.strictEqual((await A('storeSave', base)).error, 'phone already used'); ok('duplicate store phone rejected');
+    const sl2 = await call({ type: 'store', phone: '9866666666', pin: sa.pin, action: 'me' }); assert(sl2.ok && sl2.store.status === 'Approved'); ok('added store signs in at once');
+    assert((await call({ type: 'store', phone: '9866666666', pin: sa.pin, action: 'item_save', item: { name: 'Atta', variant: '5 kg', price: 240, stock: 12 } })).ok); ok('added store can list products');
+    const lst = (await A('list')).stores.find(x => x.id === sa.id); assert(lst.items === 1 && lst.status === 'Approved'); ok('admin list shows product count');
+    const ed = await A('storeSave', Object.assign({}, base, { id: sa.id, name: 'Raj Kirana & General', area: 'MP Nagar' })); assert(ed.ok && !ed.pin); ok('admin edits store without changing PIN');
+    assert((await call({ type: 'store', phone: '9866666666', pin: sa.pin, action: 'me' })).ok); ok('PIN still works after edit');
+    const ph2 = await A('storeSave', Object.assign({}, base, { id: sa.id, phone: '9877777777' })); assert(ph2.ok && /^\d{6}$/.test(ph2.pin)); ok('changing phone issues a new PIN');
+    assert.strictEqual((await call({ type: 'store', phone: '9866666666', pin: sa.pin, action: 'me' })).error, 'auth'); ok('old phone/PIN stops working');
+    assert.strictEqual((await A('storeSave', Object.assign({}, base, { id: 'S-nope' }))).error, 'not found'); ok('edit unknown store rejected');
+  }
+
   // no admin key configured
   delete process.env.ADMIN_KEY;
   assert.strictEqual((await call({ type: 'admin', key: '', action: 'list' }, '3.3.3.3')).error, 'auth'); ok('no ADMIN_KEY set -> admin disabled');

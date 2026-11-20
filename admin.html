@@ -73,6 +73,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
   <div class="bar">
     <img src="images/logo-lockup.png" alt="VidhyaLabs">
     <b>Admin</b><span class="sp"></span>
+    <a class="btn btn-ghost" href="driver.html" target="_blank" rel="noopener" style="padding:.45em 1em">Driver app</a><a class="btn btn-ghost" href="store.html" target="_blank" rel="noopener" style="padding:.45em 1em">Store app</a>
     <span class="meta" id="updated"></span>
     <button class="btn btn-ghost" id="refresh" type="button">Refresh</button>
     <button class="btn btn-ghost" id="signout" type="button">Sign out</button>
@@ -219,15 +220,19 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
   function storesView() {
     if (!live) return '<div class="empty">Stores need the backend. See SETUP.md.</div>';
     var s = state.data.stores;
-    if (!s.length) return '<div class="empty">No store applications yet. Share the page <b>partner.html</b> to let stores apply.</div>';
+    var areas = (VL.config.areas || []).map(function (a) { return '<option>' + esc(a) + '</option>'; }).join('');
+    var form = '<div class="addform"><div><label for="sn">Store name</label><input id="sn" autocomplete="off"></div><div><label for="so">Owner name</label><input id="so" autocomplete="off"></div><div><label for="sp">Phone number</label><input id="sp" type="tel" inputmode="tel" autocomplete="off"></div>' +
+      '<div><label for="sa">Area</label><select id="sa"><option value="">Select area</option>' + areas + '</select></div><div style="flex-basis:100%"><label for="sd">Store address</label><input id="sd" autocomplete="off"></div>' +
+      '<button class="btn btn-primary" data-addstore type="button">Add store</button></div>';
+    if (!s.length) return form + '<div class="empty">No stores yet. Add one above, or share <b>partner.html</b> so stores can apply themselves.</div>';
     var order = { Pending: 0, Approved: 1, Suspended: 2, Rejected: 3 };
-    return s.slice().sort(function (a, b) { return (order[a.status] - order[b.status]) || (b.at - a.at); }).map(function (r) {
+    return form + s.slice().sort(function (a, b) { return (order[a.status] - order[b.status]) || (b.at - a.at); }).map(function (r) {
       var cls = r.status === 'Approved' ? 'good' : (r.status === 'Pending' ? '' : 'bad'), id = esc(r.id);
       var btns = r.status === 'Pending' ? '<button class="btn btn-primary" data-store="approve" data-id="' + id + '">Approve</button> <button class="ghost red" data-store="reject" data-id="' + id + '">Reject</button>' :
         r.status === 'Approved' ? '<button class="ghost" data-store="resetpin" data-id="' + id + '">Reset PIN</button> <button class="ghost red" data-store="suspend" data-id="' + id + '">Suspend</button>' :
         '<button class="ghost" data-store="approve" data-id="' + id + '">Approve again</button>';
       return '<div class="order"><div class="row"><span><span class="id">' + esc(r.name) + '</span> <span class="chip2 ' + cls + '">' + esc(r.status) + '</span></span><span class="meta">' + when(r.at) + '</span></div>' +
-        '<div class="cols"><div>' + esc(r.owner) + '<br>' + esc(r.phone) + '<br>' + esc(r.area) + '<br>' + esc(r.address) + '</div><div>' + (r.categories.length ? 'Sells: ' + esc(r.categories.join(', ')) + '<br>' : '') + (r.fssai ? 'FSSAI: ' + esc(r.fssai) + '<br>' : '<span class="meta">No FSSAI number given</span><br>') + (r.notes ? '<span class="meta">' + esc(r.notes) + '</span>' : '') + '</div></div><div class="st">' + btns + '</div></div>';
+        '<div class="cols"><div>' + esc(r.owner) + '<br>' + esc(r.phone) + '<br>' + esc(r.area) + '<br>' + esc(r.address) + '</div><div>' + (r.categories.length ? 'Sells: ' + esc(r.categories.join(', ')) + '<br>' : '') + (r.status === 'Approved' ? 'Products listed: ' + (r.items || 0) + '<br>' : '') + (r.fssai ? 'FSSAI: ' + esc(r.fssai) + '<br>' : '<span class="meta">No FSSAI number given</span><br>') + (r.notes ? '<span class="meta">' + esc(r.notes) + '</span>' : '') + '</div></div><div class="st">' + btns + '</div></div>';
     }).join('');
   }
   function threads() {
@@ -259,6 +264,16 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
   document.addEventListener('click', function (e) {
     var t = e.target.closest('button'); if (!t) return;
     if (t.hasAttribute('data-t')) { state.tab = t.getAttribute('data-t'); state.note = ''; render(); }
+    else if (t.hasAttribute('data-addstore')) {
+      var sv = function (i) { return $(i).value.trim(); }, sph = sv('sp').replace(/\D/g, '').slice(-10);
+      if (sv('sn').length < 2 || sv('so').length < 2 || sph.length !== 10 || !sv('sa') || !sv('sd')) return alertBar('Enter the store name, owner, a 10-digit phone, the area and the address.');
+      t.disabled = true;
+      call('storeSave', { name: sv('sn'), owner: sv('so'), phone: sph, area: sv('sa'), address: sv('sd') }).then(function (r) {
+        if (r && r.ok) state.note = 'Store added and approved: ' + esc(sv('sn')) + '. Login at <b>store.html</b> with phone ' + esc(sph) + ', PIN <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once. Use Reset PIN if it is lost.';
+        else alertBar(r && r.error === 'phone already used' ? 'A store with that phone number already exists.' : 'Could not add the store. Try again.');
+        state.busy = false; load();
+      });
+    }
     else if (t.hasAttribute('data-adddriver')) {
       var nm = $('dn').value.trim(), pn = $('dp').value.replace(/\D/g, '').slice(-10);
       if (nm.length < 2 || pn.length !== 10) return alertBar('Enter the driver name and a 10-digit phone number.');
@@ -271,13 +286,13 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
       var did = t.getAttribute('data-driverpin') || t.getAttribute('data-drivertoggle'), dr = state.data.drivers.filter(function (x) { return x.id === did; })[0]; if (!dr) return;
       var reset = t.hasAttribute('data-driverpin'); t.disabled = true;
       call('driverSave', { id: dr.id, name: dr.name, phone: dr.phone, active: reset ? dr.active : !dr.active, resetPin: reset }).then(function (r) {
-        if (r && r.ok && r.selfPin) state.note = 'Approved. ' + esc(sr ? sr.name : 'The store') + ' can now sign in at <b>store.html</b> with the PIN they chose when applying.'; else if (r && r.ok && r.pin) state.note = 'New PIN for ' + esc(dr.name) + ': <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the driver. Try again.');
+        if (r && r.ok && r.pin) state.note = 'New PIN for ' + esc(dr.name) + ': <code>' + esc(r.pin) + '</code>. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the driver. Try again.');
         state.busy = false; load();
       });
     } else if (t.hasAttribute('data-store')) {
       var dec = t.getAttribute('data-store'), sid = t.getAttribute('data-id'), sr = state.data.stores.filter(function (x) { return x.id === sid; })[0]; t.disabled = true;
       call('storeDecide', { id: sid, decision: dec }).then(function (r) {
-        if (r && r.ok && r.pin) state.note = 'PIN for ' + esc(sr ? sr.name : 'store') + ': <code>' + esc(r.pin) + '</code>. Login: <b>store.html</b> with phone ' + esc(sr ? sr.phone : '') + '. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the store. Try again.');
+        if (r && r.ok && r.selfPin) state.note = 'Approved. ' + esc(sr ? sr.name : 'The store') + ' can now sign in at <b>store.html</b> with the PIN they chose when applying.'; else if (r && r.ok && r.pin) state.note = 'PIN for ' + esc(sr ? sr.name : 'store') + ': <code>' + esc(r.pin) + '</code>. Login: <b>store.html</b> with phone ' + esc(sr ? sr.phone : '') + '. Share it privately. It is shown only once.'; else if (!r || !r.ok) alertBar('Could not update the store. Try again.');
         state.busy = false; load();
       });
     }
