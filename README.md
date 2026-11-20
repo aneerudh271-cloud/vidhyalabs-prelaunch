@@ -1,6 +1,6 @@
 # VidhyaLabs
 
-Your everyday needs. One platform. Hyperlocal website + installable app (PWA) for Bhopal (Indus Town, Krishnapuram, Radhapuram).
+Your everyday needs. One platform. Hyperlocal website + installable app (PWA) for all of Bhopal.
 
 ## Structure
 - `index.html` – marketing website

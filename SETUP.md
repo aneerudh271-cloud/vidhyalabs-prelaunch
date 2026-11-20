@@ -38,7 +38,7 @@ Until the database is connected (section 1), `/api` answers "database not connec
 
 ## Google sign-in for customers (optional, recommended)
 
-When `GOOGLE_CLIENT_ID` is set, customers must sign in with Google and save a 10-digit mobile number before they can order. Orders from the app are rejected by the server otherwise. Service is Bhopal only (Indus Town, Krishnapuram, Radhapuram).
+When `GOOGLE_CLIENT_ID` is set, customers must sign in with Google and save a 10-digit mobile number before they can order. Orders from the app are rejected by the server otherwise. Service is Bhopal only (any Bhopal locality in the area list).
 
 1. Google Cloud Console, APIs & Services, Credentials, Create credentials, **OAuth client ID**, type **Web application**.
 2. Authorised JavaScript origins: `https://vidhyalabs.com` and `https://www.vidhyalabs.com`. No redirect URI needed.

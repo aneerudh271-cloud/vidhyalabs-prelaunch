@@ -5,7 +5,7 @@ window.VL = (function () {
     tagline: 'Your everyday needs. One platform.',
     phoneDisplay: '+91 74006 37753',
     email: 'hello@vidhyalabs.com',     // EDIT
-    areas: ['Indus Town', 'Krishnapuram', 'Radhapuram'],
+    areas: ['Indus Town', 'Krishnapuram', 'Radhapuram', 'Ayodhya Bypass', 'Arera Colony', 'Ashoka Garden', 'Awadhpuri', 'Bagsewaniya', 'Bairagarh', 'Barkhedi', 'Bawadiya Kalan', 'Berasia Road', 'Bhel', 'Chuna Bhatti', 'Danish Kunj', 'Gulmohar', 'Govindpura', 'Habibganj', 'Hoshangabad Road', 'Jahangirabad', 'Karond', 'Katara Hills', 'Kohefiza', 'Kolar Road', 'Kotra Sultanabad', 'Lalghati', 'MP Nagar', 'Misrod', 'Neelbad', 'New Market', 'Old City', 'Piplani', 'Rachna Nagar', 'Ratibad', 'Saket Nagar', 'Shahpura', 'TT Nagar', 'Other Bhopal (add in address)'],   // all of Bhopal; keep in sync with AREAS in lib/vl.js
     cutoff: '9pm',
     slot: '6–8am',
     formEndpoint: '/api'                // Postgres-backed API on this site (api/index.js). See SETUP.md.
