@@ -120,6 +120,39 @@ const api = require('../api/index.js');
   for (let i = 0; i < 45; i++) { const x = await call({ type: 'signup', phone: '9000000002' }, '7.7.7.7'); if (x.error === 'slow down') blocked = true; }
   assert(blocked); ok('public writes rate limited per IP');
 
+  // google login + mobile required (mocked Google keys)
+  {
+    const crypto = require('crypto'), auth = require('../lib/auth');
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const jwk = Object.assign(publicKey.export({ format: 'jwk' }), { kid: 'k1', alg: 'RS256', use: 'sig' });
+    auth.setKeyFetcher(async () => [jwk]);
+    const mk = (over, key) => { const b = o => Buffer.from(JSON.stringify(o)).toString('base64url'); const h = b({ alg: 'RS256', kid: 'k1' }), p = b(Object.assign({ iss: 'https://accounts.google.com', aud: 'cid.apps.googleusercontent.com', sub: '123', email: 'a@x.com', email_verified: true, name: 'Asha Rao', exp: Math.floor(Date.now() / 1000) + 600 }, over)); return h + '.' + p + '.' + crypto.createSign('RSA-SHA256').update(h + '.' + p).sign(key || privateKey).toString('base64url'); };
+    const o1 = { type: 'order', id: 'VLG1', customer: { name: 'Asha', phone: '9876543210', area: 'Indus Town', address: 'B-12' }, lines: [{ text: 'Milk' }] };
+    assert.strictEqual((await call(o1)).ok, true); ok('orders open while google login is not configured');
+    process.env.GOOGLE_CLIENT_ID = 'cid.apps.googleusercontent.com';
+    assert.strictEqual((await call(Object.assign({}, o1, { id: 'VLG2' }))).error, 'login required'); ok('order without login blocked');
+    assert.strictEqual((await call({ type: 'login', idToken: mk({ aud: 'other' }) })).error, 'login failed'); ok('wrong audience rejected');
+    assert.strictEqual((await call({ type: 'login', idToken: mk({ exp: 1 }) })).error, 'login failed'); ok('expired token rejected');
+    assert.strictEqual((await call({ type: 'login', idToken: mk({}, crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey) })).error, 'login failed'); ok('forged signature rejected');
+    assert.strictEqual((await call({ type: 'login', idToken: mk({ iss: 'https://evil.com' }) })).error, 'login failed'); ok('wrong issuer rejected');
+    const li = await call({ type: 'login', idToken: mk({}) });
+    assert(li.ok && li.session && li.user.email === 'a@x.com' && li.user.phone === ''); ok('google login creates account');
+    assert.strictEqual((await call(Object.assign({}, o1, { id: 'VLG3', session: li.session }))).error, 'mobile required'); ok('order blocked until mobile added');
+    assert.strictEqual((await call({ type: 'account', session: li.session, phone: '12345' })).error, 'invalid mobile'); ok('bad mobile rejected');
+    assert.strictEqual((await call({ type: 'account', session: li.session, phone: '5876543210' })).error, 'invalid mobile'); ok('non-Indian mobile prefix rejected');
+    assert.strictEqual((await call({ type: 'account', session: 'x.y', phone: '9876543210' })).error, 'login required'); ok('bad session rejected');
+    const ac = await call({ type: 'account', session: li.session, phone: '+91 98765 43210' });
+    assert(ac.ok && ac.user.phone === '9876543210'); ok('mobile saved');
+    assert.deepStrictEqual(await call(Object.assign({}, o1, { id: 'VLG4', session: li.session, customer: Object.assign({}, o1.customer, { phone: '1111111111' }) })), { ok: true }); ok('order accepted with login + mobile');
+    const rows = await A('list'); const g4 = JSON.stringify(rows).includes('VLG4');
+    assert(g4); ok('order visible to admin');
+    const li2 = await call({ type: 'login', idToken: mk({}) });
+    assert.strictEqual(li2.user.phone, '9876543210'); ok('mobile remembered on next login');
+    delete process.env.GOOGLE_CLIENT_ID;
+    let hh; await api({ method: 'GET', url: '/api', headers: {} }, { setHeader() {}, end(s) { hh = JSON.parse(s); } });
+    assert.strictEqual(hh.google, 'missing'); ok('health reports google off');
+  }
+
   // no admin key configured
   delete process.env.ADMIN_KEY;
   assert.strictEqual((await call({ type: 'admin', key: '', action: 'list' }, '3.3.3.3')).error, 'auth'); ok('no ADMIN_KEY set -> admin disabled');

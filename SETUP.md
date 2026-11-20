@@ -35,3 +35,14 @@ Three more pages work once the database is connected:
 - Fill the [bracketed] items in `legal.html`.
 
 Until the database is connected (section 1), `/api` answers "database not connected", orders stay on the customer's phone and the admin page cannot sign in.
+
+## Google sign-in for customers (optional, recommended)
+
+When `GOOGLE_CLIENT_ID` is set, customers must sign in with Google and save a 10-digit mobile number before they can order. Orders from the app are rejected by the server otherwise. Service is Bhopal only (Indus Town, Krishnapuram, Radhapuram).
+
+1. Google Cloud Console, APIs & Services, Credentials, Create credentials, **OAuth client ID**, type **Web application**.
+2. Authorised JavaScript origins: `https://vidhyalabs.com` and `https://www.vidhyalabs.com`. No redirect URI needed.
+3. Copy the Client ID (it looks like `123-abc.apps.googleusercontent.com`) into Vercel Environment Variables as `GOOGLE_CLIENT_ID`, then redeploy.
+4. Optional: `SESSION_SECRET` (any long random text) to sign login sessions. Without it, a key derived from the database URL is used.
+
+The mobile number is saved but not OTP-verified. Add an SMS OTP provider later if you need verified numbers.
